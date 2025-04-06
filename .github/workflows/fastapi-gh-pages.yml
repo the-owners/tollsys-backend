@@ -1,0 +1,62 @@
+# Workflow for building and deploying API docs site to GitHub Pages (FastAPI/Redocly)
+name: Generate API docs and deploy to GitHub Pages
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Gen & deploy docs job
+  gendeploy:
+    runs-on: ubuntu-latest
+    steps:
+    # Checks out the entire repo.
+    - name: Checks out repo
+      uses: actions/checkout@v1
+
+    # Generates an openapi.json file based on the FastAPI project.
+    # Although, we could generate it in yaml directly but idk how to feed it in that format to the next action
+    - name: Generate OpenAPI file
+      uses: column-st/fastapi-openapi-specs-action@v1.0.2
+      with:
+        moduleDir: app
+        fileName: main.py
+        appName: app
+        fastapiVersioning: None
+        outputExtension: json
+
+    # Use previously generated file to generate docs
+    - name: Generate API docs and deploy to GitHub Pages
+      uses: msayson/openapi-github-pages-action@v2.0.0
+      with:
+        # JSON string configs for each OpenAPI spec to document
+        # - branch: (Optional) Git branch to fetch spec file from, eg. origin/main
+        #           If not provided, assumes file is available from current branch
+        # - generate-api-spec-command: (Optional) Command to run to generate spec file
+        # - openapi-json-filepath: Filepath of OpenAPI JSON spec
+        # - api-doc-filepath: Filepath for generated API doc, within the common directory defined by api-docs-dir
+        api-configs: |-
+          [
+            {
+              "openapi-json-filepath": "openapi.json",
+              "api-doc-filepath": "latest/docs.html"
+            }
+          ]
+        # Parent directory to use for generated API docs HTML
+        api-docs-dir: docs

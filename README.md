@@ -69,8 +69,16 @@ Also, consider using
 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/),
 seriously!
 
+Oh, and pushing to main is blocked. Please stick to creating branchs and doing
+pull-requests.
+
+> [!CAUTION]
+> main should ALWAYS WORK NO MATTER WHAT.
+
 ## Acknowledgements [↑](#tolling-system-backend)
 
 To these awesome projects that made this even possible:
 * [FastAPI](https://github.com/fastapi/fastapi)
 * [astral-sh/uv](https://github.com/astral-sh/uv)
+* [column-st/fastapi-openapi-specs-action](https://github.com/marketplace/actions/fastapi-openapi-specs-generator)
+* [msayson/openapi-github-pages-action](https://github.com/marketplace/actions/openapi-github-pages-documentation)
