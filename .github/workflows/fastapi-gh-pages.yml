@@ -23,27 +23,11 @@ concurrency:
 
 jobs:
   # Gen & deploy docs job
-  gendeploy:
+  generate-n-deploy:
     runs-on: ubuntu-latest
     steps:
-    # Checks out the entire repo.
-    - name: Checks out repo
-      uses: actions/checkout@v1
-
-    # Generates an openapi.json file based on the FastAPI project.
-    # Although, we could generate it in yaml directly but idk how to feed it in that format to the next action
-    - name: Generate OpenAPI file
-      uses: column-st/fastapi-openapi-specs-action@v1.0.2
-      with:
-        moduleDir: app
-        fileName: main.py
-        appName: app
-        fastapiVersioning: None
-        outputExtension: json
-
-    # Use previously generated file to generate docs
     - name: Generate API docs and deploy to GitHub Pages
-      uses: msayson/openapi-github-pages-action@v2.0.0
+      uses: the-owners/fastapi-github-pages-action@v2.0.1
       with:
         # JSON string configs for each OpenAPI spec to document
         # - branch: (Optional) Git branch to fetch spec file from, eg. origin/main
