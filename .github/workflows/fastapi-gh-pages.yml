@@ -25,9 +25,6 @@ jobs:
   # Gen & deploy docs job
   generate-n-deploy:
     runs-on: ubuntu-latest
-    container:
-    # Dirty hack to fix permissions issue when using generated specs file
-      options: --user root
     steps:
     - name: Generate API docs and deploy to GitHub Pages
       uses: the-owners/fastapi-github-pages-action@v2.0.2
