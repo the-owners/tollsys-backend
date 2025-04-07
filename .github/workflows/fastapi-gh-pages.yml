@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Generate API docs and deploy to GitHub Pages
-      uses: the-owners/fastapi-github-pages-action@v2.0.1
+      uses: the-owners/fastapi-github-pages-action@v2.0.2
       with:
         # JSON string configs for each OpenAPI spec to document
         # - branch: (Optional) Git branch to fetch spec file from, eg. origin/main
