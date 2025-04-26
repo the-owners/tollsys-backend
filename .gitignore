@@ -11,3 +11,6 @@ wheels/
 
 # Static assets (for offline docs)
 static/
+
+# .env file
+.env
