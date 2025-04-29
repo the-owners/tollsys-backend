@@ -7,14 +7,12 @@ import sqlalchemy as sa
 from sqlalchemy.sql import func
 from sqlalchemy import Index
 
-class Toll(SQLModel, table=True):
+class Role(SQLModel, table=True):
 
-    __tablename__ = 'Toll'
+    __tablename__ = 'Role'
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    tax_id: Optional[str]
-    legal_name: Optional[str]
-    address: Optional[str]
+    name: Optional[str]
     created_at: Optional[datetime.datetime]
     created_by: Optional[int] = Field(foreign_key='User.id')
     updated_at: Optional[datetime.datetime]
@@ -22,7 +20,7 @@ class Toll(SQLModel, table=True):
 
     __table_args__ = (
                 
-    Index('idx_toll_tax_id', 'tax_id'),
-    Index('idx_toll_created_by', 'created_by'),
-    Index('idx_toll_updated_by', 'updated_by'),
-            )
+    Index('idx_role_name', 'name'),
+    Index('idx_role_created_by', 'created_by'),
+    Index('idx_role_updated_by', 'updated_by'),
+    )
