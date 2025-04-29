@@ -14,3 +14,4 @@ static/
 
 # .env file
 .env
+venv/
