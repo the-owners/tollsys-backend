@@ -14,10 +14,6 @@ class UserBase(SQLModel):
   username: str
   role_id: int | None = Field(default=None, foreign_key='Role.id')
   toll_id: int | None = Field(default=None, foreign_key='Toll.id')
-  created_at: datetime.datetime | None = Field(default=datetime.datetime.now)
-  created_by: int | None = Field(default=None, foreign_key='User.id')
-  updated_at: datetime.datetime | None = Field(sa_column=Column(DateTime(), onupdate=func.now()))
-  updated_by: int | None = Field(default=None, foreign_key='User.id')
 
 
 class User(UserBase, table=True):
@@ -34,13 +30,19 @@ class User(UserBase, table=True):
   Index('idx_user_updated_by', 'updated_by'),
   )
 
+  # we should move this to a mixin in a future refactor after everything is working
+  created_at: datetime.datetime | None = Field(default_factory=lambda: datetime.datetime.now())
+  created_by: int | None = Field(default=None, foreign_key='User.id')
+  updated_at: datetime.datetime | None = Field(default=None, sa_column=Column(DateTime(), onupdate=func.now()))
+  updated_by: int | None = Field(default=None, foreign_key='User.id')
+
 class UserPublic(UserBase):
   id: int
   name: str
   username: str
   role_id: int
   toll_id: int
-  # this shouldn't be nullable but fastapi crashes for some reason
+  # this shouldn't be nullable but fastapi crashes for some reason as the db isn't in a good state for now
   created_at: datetime.datetime | None
   created_by: int | None
   updated_at: datetime.datetime | None
@@ -53,8 +55,6 @@ class UserCreate(UserBase):
   password: str
   role_id: int
   toll_id: int
-  created_by: int # this should be automatically picked up from the current user but i'll leave it like this for now
-  # ditto for updated_by
 
 class UserUpdate(UserBase):
   name: str | None = None # type: ignore[assignment]
