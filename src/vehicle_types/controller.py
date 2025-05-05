@@ -15,7 +15,7 @@ router = APIRouter(
 )
 
 @router.post("/", response_model=VehicleTypePublic, status_code=status.HTTP_201_CREATED, responses={status.HTTP_201_CREATED: {"description": "Vehicle type created sucessfully.", "model": VehicleTypePublic}})
-def create_payment_method(vehicle_type: VehicleTypeCreate, session: SessionDep):
+def create_vehicle_type(vehicle_type: VehicleTypeCreate, session: SessionDep):
     db_vehicle_type = VehicleType.model_validate(vehicle_type)
     session.add(db_vehicle_type)
     session.commit()
@@ -38,7 +38,7 @@ def read_vehicle_types(
 def read_vehicle_type(vehicle_type_id: int, session: SessionDep):
     vehicle_type = session.get(VehicleType, vehicle_type)
     if not vehicle_type:
-        raise HTTPException(status_code=404, detail="Payment Method not found")
+        raise HTTPException(status_code=404, detail="Vehicle Type not found")
     return vehicle_type
 
 
@@ -56,7 +56,7 @@ def update_vehicle_type(vehicle_type_id: int, vehicle_type: VehicleTypeUpdate, s
 
 
 @router.delete("/{vehicle_type_id}")
-def delete_payment_method(vehicle_type_id: int, session: SessionDep):
+def delete_vehicle_type(vehicle_type_id: int, session: SessionDep):
     vehicle_type = session.get(VehicleType, vehicle_type_id)
     if not vehicle_type:
         raise HTTPException(status_code=404, detail="Vehicle type not found")
