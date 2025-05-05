@@ -7,26 +7,29 @@ import os
 import sys
 from dotenv import load_dotenv
 
+# Agrega 'src' al PYTHONPATH para que los imports absolutos funcionen
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
-# Agregamos la raíz del proyecto al path
 
-
-# Carga variables del entorno desde .env
+# Cargar variables de entorno desde .env
 load_dotenv()
 
-# Importa el engine y modelos
+# Importa el motor de base de datos
 from database.core import engine
 
-from app.models import *  # importa todos tus modelos para registrar metadata
+# Importa los modelos para que SQLModel registre su metadata
+# Ajusta los paths de acuerdo a tu estructura en 'src'
+from users.models import *
+from tolls.models import *
+from roles.models import *
 
 # Configuración de Alembic
 config = context.config
 
-# Configura logging si se desea
+# Habilita logging de Alembic
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Establece metadata para autogenerar migraciones
+# Metadata de SQLModel para autogenerar migraciones
 target_metadata = SQLModel.metadata
 
 
@@ -38,7 +41,7 @@ def run_migrations_offline():
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        compare_type=True,  # Importante para detectar cambios en tipos de columnas
+        compare_type=True,
     )
 
     with context.begin_transaction():
@@ -60,6 +63,7 @@ def run_migrations_online():
             context.run_migrations()
 
 
+# Selecciona el modo de ejecución
 if context.is_offline_mode():
     run_migrations_offline()
 else:
