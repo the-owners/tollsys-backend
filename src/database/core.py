@@ -6,9 +6,9 @@ from sqlmodel import Field, Session, SQLModel, create_engine, select
 import os
 from dotenv import load_dotenv
 
-from ..tolls.models import *
-from ..users.models import *
-from ..roles.models import *
+from tolls.models import * #le quitamos el asterisco para evitar problemas de importación circular
+from users.models import *
+from roles.models import *
 import datetime
 
 load_dotenv()
