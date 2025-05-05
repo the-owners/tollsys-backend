@@ -4,40 +4,43 @@ from fastapi import Depends, HTTPException, Query
 from sqlmodel import Column, Field, Session, SQLModel, create_engine, select, column
 import sqlalchemy as sa
 from sqlalchemy.sql import func
-from sqlalchemy import Index, DateTime
+from sqlalchemy import DateTime
 
 class PaymentMethodBase(SQLModel):
-    name: str = Field(index=True)
-    active: bool = Field(default=True)
-    amount: int = Field(default=True)
-    created_at: datetime.datetime | None = Field(default=datetime.datetime.now)
-    created_by: int | None = Field(default=None, foreign_key='User.id')
-    updated_at: datetime.datetime | None = Field(sa_column=Column(DateTime(), onupdate=func.now()))
-    updated_by: int | None = Field(default=None, foreign_key='User.id')
+    name: str 
+    icon: str
+    active: bool 
+    
 
 class PaymentMethod(PaymentMethodBase, table=True):
-    __tablename__ = "PaymentMethod"
+    __tablename__ = 'PaymentMethod'
     id: int | None = Field(default=None, primary_key=True)
-
-    __table_args__ = (
-        # name, active, amount, created_at, created_by, updated_at, updated_by
-        Index('idx_paymentMethod_name', 'name'),
-        Index('idx_paymentMethod_active', 'active'),
-        Index('idx_paymentMethod_amount', 'amount'),
-        Index('idx_paymentMethod_created_by', 'created_by'),
-        Index('idx_paymentMethod_updated_at', 'updated_at'),
-        Index('idx_paymentMethod_updated_by', 'updated_by')
-    )
+    name: str 
+    icon: str
+    active:bool
+    created_at: datetime | None = Field(default_factory=lambda: datetime.now())
+    created_by: int | None = Field(default=None, foreign_key='User.id')
+    updated_at: datetime | None = Field(default=None, sa_column=Column(DateTime(), onupdate=func.now()))
+    updated_by: int | None = Field(default=None, foreign_key='User.id')
 
 class PaymentMethodPublic(PaymentMethodBase):
     id: int
+    name: str
+    icon:str
+    active: bool 
+    created_at: datetime | None
+    created_by: int | None
+    updated_at: datetime | None
+    updated_by: int | None
+    
 
 class PaymentMethodCreate(PaymentMethodBase):
     name: str
+    icon: str
     active: bool
 
-# nullable to allow for partial update, but
-# here we ignore sum shit cuz mypy gets obnoxious otherwise
 class PaymentMethodUpdate(PaymentMethodBase):
     name: str | None = None # type: ignore[assignment]
+    icon:str | None = None
     active: bool | None = None # type: ignore[assignment]
+    updated_by: int | None = None
