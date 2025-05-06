@@ -1,6 +1,5 @@
-from uuid import UUID
-from pydantic import BaseModel, EmailStr
 from sqlmodel import SQLModel
+from ..users.models import UserPublic
 
 class Token(SQLModel):
     access_token: str
@@ -8,3 +7,9 @@ class Token(SQLModel):
     
 class TokenData(SQLModel):
     user_id: int | None = None
+    role_id: int | None = None
+    username: str | None = None
+
+class LoginResponse(SQLModel):
+    access_token: str
+    user: UserPublic

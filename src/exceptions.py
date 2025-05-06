@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 class UserError(HTTPException):
     """Base exception for user-related errors"""
@@ -19,4 +19,4 @@ class InvalidPasswordError(UserError):
 
 class AuthenticationError(HTTPException):
     def __init__(self, message: str = "Could not validate user"):
-        super().__init__(status_code=401, detail=message)
+        super().__init__(status_code=401, detail=message, headers={"WWW-Authenticate": "Bearer"})

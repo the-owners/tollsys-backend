@@ -9,7 +9,10 @@ from dotenv import load_dotenv
 from ..tolls.models import *
 from ..users.models import *
 from ..roles.models import *
+from ..permissions.models import *
+from ..role_permissions.models import *
 import datetime
+import logging
 
 load_dotenv()
 
@@ -77,4 +80,19 @@ def initialize_first_data():
         role.created_by = user.id
         session.add(toll)
         session.add(role)
+        session.commit()
+
+        # permissions stuff
+        permissions = [
+            Permission(name="manage_users"), # id 1
+            Permission(name="process_payments") # id 2
+        ]
+        session.add_all(permissions)
+        session.commit()
+
+        admin_role_permissions = [
+            RolePermission(role_id=1, permission_id=1),
+            RolePermission(role_id=1, permission_id=2)
+        ]
+        session.add_all(admin_role_permissions)
         session.commit()

@@ -17,7 +17,15 @@ async def register_user(request: Request, db: SessionDep,
                       register_user_request: UserCreate):
     service.register_user(db, register_user_request)
 
-@router.post("/login", response_model=models.Token)
+@router.post("/login", response_model=models.LoginResponse)
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
                                  db: SessionDep):
     return service.login(form_data, db)
+
+
+@router.post("/logout")
+async def logout(
+    current_user: service.CurrentUser, reason: str, observations: str, db: SessionDep
+):
+    service.logout(current_user, reason, observations, db)
+    return {"message": "Successfully logged out"}

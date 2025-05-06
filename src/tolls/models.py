@@ -26,3 +26,7 @@ class Toll(SQLModel, table=True):
     Index('idx_toll_created_by', 'created_by'),
     Index('idx_toll_updated_by', 'updated_by'),
             )
+
+class TollPublic(SQLModel):
+    id: int | None = None
+    legal_name: str | None = Field(default=None, alias="legal_name")

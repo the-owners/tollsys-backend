@@ -7,7 +7,7 @@ from ..database.core import SessionDep
 from . import  models
 from . import service
 from .models import *
-from ..auth.service import get_current_active_user
+from ..auth.service import CurrentUser
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 router = APIRouter(
@@ -16,7 +16,7 @@ router = APIRouter(
 )
 
 @router.get("/me", response_model=UserPublic)
-def read_users_me(current_user: Annotated[User, Depends(get_current_active_user)]):
+def read_users_me(current_user: CurrentUser):
     return current_user
 
 @router.post("/", response_model=UserPublic, status_code=status.HTTP_201_CREATED, responses={status.HTTP_201_CREATED: {"description": "User created sucessfully.", "model": UserPublic}})
