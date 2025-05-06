@@ -1,24 +1,27 @@
-import datetime
-import decimal
-from typing import Optional
-from sqlmodel import Field, SQLModel
-from enum import Enum
+from typing import Annotated
+from datetime import datetime
+from fastapi import Depends, HTTPException, Query
+from sqlmodel import Column, Field, Session, SQLModel, create_engine, select, column, Index
 import sqlalchemy as sa
 from sqlalchemy.sql import func
-from sqlalchemy import Index
+from sqlalchemy import DateTime
 
-class Toll(SQLModel, table=True):
+class TollBase(SQLModel):
+    tax_id: str 
+    legal_name: str
+    address: str
+    
 
+class Toll(TollBase, table=True):
     __tablename__ = 'Toll'
-
-    id: Optional[int] = Field(default=None, primary_key=True)
-    tax_id: Optional[str]
-    legal_name: Optional[str]
-    address: Optional[str]
-    created_at: Optional[datetime.datetime]
-    created_by: Optional[int] = Field(foreign_key='User.id')
-    updated_at: Optional[datetime.datetime]
-    updated_by: Optional[int] = Field(foreign_key='User.id')
+    id: int | None = Field(default=None, primary_key=True)
+    tax_id: str 
+    legal_name: str
+    address: str
+    created_at: datetime | None = Field(default_factory=lambda: datetime.now())
+    created_by: int | None = Field(default=None, foreign_key='User.id')
+    updated_at: datetime | None = Field(default=None, sa_column=Column(DateTime(), onupdate=func.now()))
+    updated_by: int | None = Field(default=None, foreign_key='User.id')
 
     __table_args__ = (
                 
@@ -27,6 +30,26 @@ class Toll(SQLModel, table=True):
     Index('idx_toll_updated_by', 'updated_by'),
             )
 
-class TollPublic(SQLModel):
-    id: int | None = None
-    legal_name: str | None = Field(default=None, alias="legal_name")
+
+class TollPublic(TollBase):
+    id: int
+    tax_id: str 
+    legal_name: str
+    address: str
+    created_at: datetime | None
+    created_by: int | None
+    updated_at: datetime | None
+    updated_by: int | None
+
+
+class TollCreate(TollBase):
+    tax_id: str 
+    legal_name: str
+    address: str
+
+
+class TollUpdate(TollBase):
+    tax_id: str | None = None # type: ignore[assignment]
+    legal_name:str | None = None
+    address: str | None = None
+    updated_by: int | None = None

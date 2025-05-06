@@ -50,7 +50,7 @@ def initialize_first_data():
             legal_name="Main Toll Plaza",
             address="Initial Address",
             created_at=datetime.datetime.now(datetime.timezone.utc),
-            created_by=None # who's going to create this? god?
+            created_by=None # who's going to create this? god? us bro
         )
         session.add(toll)
         
@@ -72,6 +72,7 @@ def initialize_first_data():
             created_at=datetime.datetime.now(datetime.timezone.utc),
             created_by=None # duh
         )
+        
         session.add(user)
         session.commit()
         

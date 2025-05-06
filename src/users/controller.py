@@ -22,7 +22,6 @@ def read_users_me(current_user: CurrentUser):
 @router.post("/", response_model=UserPublic, status_code=status.HTTP_201_CREATED, responses={status.HTTP_201_CREATED: {"description": "User created sucessfully.", "model": UserPublic}})
 def create_user(user: UserCreate, session: SessionDep):
     db_user = User.model_validate(user)
-    # we have to add hashing and stuff later on a proper register_user function
     session.add(db_user)
     session.commit()
     session.refresh(db_user)
