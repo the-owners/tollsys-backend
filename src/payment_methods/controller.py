@@ -21,7 +21,6 @@ def create_payment_method(payment_method: PaymentMethodCreate, session: SessionD
     session.commit()
     session.refresh(db_payment_method)
     return db_payment_method
-    # way too convoluted for the moment, we're just getting started no thanks.
     # return JSONResponse(status_code=status.HTTP_201_CREATED, content=jsonable_encoder(db_payment_method))
 
 
