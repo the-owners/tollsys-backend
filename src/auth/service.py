@@ -14,8 +14,8 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from . import models
 from ..exceptions import AuthenticationError
 from ..users.models import User, UserCreate, UserPublic
-from ..roles.models import RolePublic
-from ..tolls.models import TollPublic
+from ..roles.models import RolePublic, Role
+from ..tolls.models import TollPublic, Toll
 from ..database.core import SessionDep
 
 import os
@@ -123,14 +123,8 @@ def login(
             username=user.username, # type: ignore[union-attr]
             role_id=user.role_id, # type: ignore[union-attr]
             toll_id=user.toll_id, # type: ignore[union-attr]
-            role=(
-                RolePublic(id=user.role_id) if user.role_id else None # type: ignore[union-attr]
-            ),
-            toll=(
-                TollPublic(id=user.toll_id) # type: ignore[union-attr]
-                if user.toll_id # type: ignore[union-attr]
-                else None
-            ),
+            role = session.get(Role, user.role_id),
+            toll = session.get(Toll, user.toll_id)
         ),
     )
 
