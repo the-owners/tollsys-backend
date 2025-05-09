@@ -6,46 +6,46 @@ import sqlalchemy as sa
 from sqlalchemy.sql import func
 from sqlalchemy import DateTime
 
-class VehicleTypeBase(SQLModel):
-    name: str 
-    icon: str
-    rate: float
-    active: bool 
-    
 
-class VehicleType(VehicleTypeBase, table=True):
-    __tablename__ = 'VehicleType'
-    id: int | None = Field(default=None, primary_key=True)
-    name: str 
-    icon: str
+class TollPaymentBase(SQLModel):
+    receipt_nro: str 
     rate: float
-    active:bool
+    vehicle_type_id: int | None = Field(default=None, foreign_key='VehicleType.id') 
+    booth_id: int | None = Field(default=None, foreign_key='Booth.id')
+
+class TollPayment(TollPaymentBase, table=True):
+    __tablename__ = 'TollPayment'
+    id: int | None = Field(default=None, primary_key=True)
+    receipt_nro: str 
+    rate: float
+    booth_id: int | None = Field(default=None, foreign_key='Booth.id')
+    vehicle_id:int | None = Field(default=None, foreign_key='VehicleType.id')
     created_at: datetime | None = Field(default_factory=lambda: datetime.now())
     created_by: int | None = Field(default=None, foreign_key='User.id')
     updated_at: datetime | None = Field(default=None, sa_column=Column(DateTime(), onupdate=func.now()))
     updated_by: int | None = Field(default=None, foreign_key='User.id')
 
-class VehicleTypePublic(VehicleTypeBase):
+class TollPaymentPublic(TollPaymentBase):
     id: int
-    name: str
-    icon:str
+    receipt_nro: str
     rate: float
-    active: bool 
+    vehicle_type_id: int
+    booth_id: int
     created_at: datetime | None
     created_by: int | None
     updated_at: datetime | None
     updated_by: int | None
     
 
-class VehicleTypeCreate(VehicleTypeBase):
-    name: str
-    icon: str
+class TollPaymentCreate(TollPaymentBase):
+    receipt_nro: str
     rate: float
-    active: bool
+    vehicle_type_id: int
+    booth_id: int
 
-class VehicleTypeUpdate(VehicleTypeBase):
-    name: str | None = None # type: ignore[assignment]
-    icon:str | None = None
-    rate:float | None = None
-    active: bool | None = None # type: ignore[assignment]
+class TollPaymentUpdate(TollPaymentBase):
+    receipt_nro: str | None = None
+    rate: float | None = None
+    vehicle_type_id: int | None = None
+    booth_id: int | None = None
     updated_by: int | None = None
