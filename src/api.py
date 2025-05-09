@@ -10,7 +10,6 @@ from src.toll_payments.controller import router as toll_payment
 def register_routes(app: FastAPI):
     app.include_router(users_router)
     app.include_router(payment_methods_router)
-    app.include_router(users_router)
     app.include_router(auth_router)
     app.include_router(vehicle_types)
     app.include_router(tolls)
