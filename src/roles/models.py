@@ -13,10 +13,10 @@ class Role(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     name: Optional[str]
-    created_at: Optional[datetime.datetime]
-    created_by: Optional[int] = Field(foreign_key='User.id')
-    updated_at: Optional[datetime.datetime]
-    updated_by: Optional[int] = Field(foreign_key='User.id')
+    created_at: Optional[datetime.datetime] = Field(default=None)
+    created_by: Optional[int] = Field(default=None, foreign_key='User.id')
+    updated_at: Optional[datetime.datetime] = Field(default=None)
+    updated_by: Optional[int] = Field(default=None, foreign_key='User.id')
 
     __table_args__ = (
                 
@@ -24,3 +24,7 @@ class Role(SQLModel, table=True):
     Index('idx_role_created_by', 'created_by'),
     Index('idx_role_updated_by', 'updated_by'),
     )
+
+class RolePublic(SQLModel):
+    id: int | None = None
+    name: str | None = None

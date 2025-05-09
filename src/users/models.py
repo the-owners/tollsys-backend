@@ -42,11 +42,13 @@ class UserPublic(UserBase):
   username: str
   role_id: int
   toll_id: int
+  role: Optional[RolePublic] = None
+  toll: Optional[TollPublic] = None
   # this shouldn't be nullable but fastapi crashes for some reason as the db isn't in a good state for now
-  created_at: datetime.datetime | None
-  created_by: int | None
-  updated_at: datetime.datetime | None
-  updated_by: int | None
+  created_at: datetime.datetime | None = None
+  created_by: int | None = None
+  updated_at: datetime.datetime | None = None
+  updated_by: int | None = None
 
 
 class UserCreate(UserBase):
