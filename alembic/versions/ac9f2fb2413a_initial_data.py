@@ -22,48 +22,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     # ok so, there's no good way of doing data migration with alembic so,
-    # here's some duped code ig
-    # Reflect existing tables
-    # user_table = sa.Table(
-    #     'User',
-    #     op.get_context().opts['target_metadata'],
-    #     sa.Column('id', sa.Integer()),
-    #     sa.Column('name', sa.String()),
-    #     sa.Column('username', sa.String()),
-    #     sa.Column('password', sa.String()),
-    #     sa.Column('role_id', sa.Integer()),
-    #     sa.Column('toll_id', sa.Integer()),
-    #     sa.Column('created_at', sa.DateTime()),
-    #     sa.Column('created_by', sa.Integer()),
-    #     autoload=True
-    # )
-    
-    # role_table = sa.Table(
-    #     'Role',
-    #     op.get_context().opts['target_metadata'],
-    #     sa.Column('id', sa.Integer()),
-    #     sa.Column('name', sa.String()),
-    #     sa.Column('created_at', sa.DateTime()),
-    #     sa.Column('created_by', sa.Integer()),
-    #     autoload=True
-    # )
-
-    # toll_table = sa.Table(
-    #     'Toll',
-    #     op.get_context().opts['target_metadata'],
-    #     sa.Column('id', sa.Integer()),
-    #     sa.Column('tax_id', sqlmodel.sql.sqltypes.AutoString()),
-    #     sa.Column('legal_name', sqlmodel.sql.sqltypes.AutoString()),
-    #     sa.Column('address', sqlmodel.sql.sqltypes.AutoString()),
-    #     sa.Column('created_at', sa.DateTime()),
-    #     sa.Column('created_by', sa.Integer()),
-    #     sa.Column('updated_at', sa.DateTime()),
-    #     sa.Column('updated_by', sa.Integer()),
-    #     autoload=True
-    # )
-    inspector = sa.inspect(op.get_bind())
-
-    # Method 2: Access the metadata directly (carefully!)
+    # this line below is gpt sorcery ngl
     metadata = op.get_context().opts['target_metadata']
     user_table = metadata.tables['User']
     role_table = metadata.tables['Role']
@@ -73,7 +32,7 @@ def upgrade() -> None:
     op.bulk_insert(
         user_table,
         [{
-            'id': 1,
+            'id': 0,
             'name': 'Superuser',
             'username': 'root',
             'password': '$2b$12$AIR2ZnzYAWfWoS/gp39aHO9/A7LhbEP/K0AJFTWVSAfzxi//J/VNa',  # toor
@@ -89,39 +48,57 @@ def upgrade() -> None:
     op.bulk_insert(
         role_table,
         [{
-            'id': 1,
+            'id': 0,
             'name': 'admin',
             'created_at': datetime.utcnow(),
-            'created_by': 1,  # Reference existing user
+            'created_by': 0,  # Reference existing user
             'updated_at': datetime.utcnow(),
-            'updated_by': 1
+            'updated_by': 0
         }]
     )
 
     op.bulk_insert(
         toll_table,
         [{
-            'id': 1,
+            'id': 0,
             'tax_id': 'V123456789',
+            'legal_name': 'Sample toll',
+            'address': 'Sample address',
             'created_at': datetime.utcnow(),
-            'created_by': 1,  # Reference existing user
+            'created_by': 0,  # Reference existing user
             'updated_at': datetime.utcnow(),
-            'updated_by': 1
+            'updated_by': 0
         }]
     )
     
     # Update user to complete the circle
     op.execute(
         user_table.update()
-        .where(user_table.c.id == 1)
+        .where(user_table.c.id == 0)
         .values(
-            role_id=1,
-            toll_id=1,
-            created_by=1
+            role_id=0,
+            toll_id=0,
+            created_by=0,
+            updated_by=0
         )
     )
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    pass
+    metadata = op.get_context().opts['target_metadata']
+    user_table = metadata.tables['User']
+    role_table = metadata.tables['Role']
+    toll_table = metadata.tables['Toll']
+    op.execute(
+        user_table.delete()
+        .where(user_table.c.id == 0)
+    )
+    op.execute(
+        role_table.delete()
+        .where(role_table.c.id == 0)
+    )
+    op.execute(
+        toll_table.delete()
+        .where(toll_table.c.id == 0)
+    )

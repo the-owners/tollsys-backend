@@ -306,3 +306,4 @@ def downgrade() -> None:
 
     op.drop_table('Permission')
     # ### end Alembic commands ###
+    # FALTA QUITAR TYPE boothstatus
