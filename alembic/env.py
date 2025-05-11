@@ -11,14 +11,15 @@ from dotenv import load_dotenv
 import sys
 
 import warnings
+import sqlalchemy as sa
 
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///tollsys-backend.db")
 
 # Add src directory to Python path
 sys.path.append("./src") # so this is dangerous lmao
-#from src.database.models import SQLModel # type: ignore[import-not-found]
-from models import *
+from src.database.models import SQLModel # type: ignore[import-not-found]
+#from models import *
 
 # suppress circular dependency warnings
 warnings.filterwarnings(
