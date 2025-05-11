@@ -306,4 +306,4 @@ def downgrade() -> None:
 
     op.drop_table('Permission')
     # ### end Alembic commands ###
-    # FALTA QUITAR TYPE boothstatus
+    sa.Enum(name='boothstatus').drop(op.get_bind()) # see #886 in sqlalchemy/alembic
