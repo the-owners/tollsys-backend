@@ -6,7 +6,7 @@ from enum import Enum
 import sqlalchemy as sa
 from sqlalchemy.sql import func
 from sqlalchemy import Index, DateTime
-from ..tolls.models import *
+from ..tolls.models import * #le quitamos el asterisco para evitar problemas de importación circular
 from ..roles.models import *
 
 class UserBase(SQLModel):
