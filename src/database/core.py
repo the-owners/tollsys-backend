@@ -9,7 +9,10 @@ from dotenv import load_dotenv
 from ..tolls.models import * #le quitamos el asterisco para evitar problemas de importación circular
 from ..users.models import *
 from ..roles.models import *
+from ..permissions.models import *
+from ..role_permissions.models import *
 import datetime
+import logging
 
 load_dotenv()
 
@@ -47,7 +50,7 @@ def initialize_first_data():
             legal_name="Main Toll Plaza",
             address="Initial Address",
             created_at=datetime.datetime.now(datetime.timezone.utc),
-            created_by=None # who's going to create this? god?
+            created_by=None # who's going to create this? god? us bro
         )
         session.add(toll)
         
@@ -69,6 +72,7 @@ def initialize_first_data():
             created_at=datetime.datetime.now(datetime.timezone.utc),
             created_by=None # duh
         )
+        
         session.add(user)
         session.commit()
         
@@ -77,4 +81,19 @@ def initialize_first_data():
         role.created_by = user.id
         session.add(toll)
         session.add(role)
+        session.commit()
+
+        # permissions stuff
+        permissions = [
+            Permission(name="manage_users"), # id 1
+            Permission(name="process_payments") # id 2
+        ]
+        session.add_all(permissions)
+        session.commit()
+
+        admin_role_permissions = [
+            RolePermission(role_id=1, permission_id=1),
+            RolePermission(role_id=1, permission_id=2)
+        ]
+        session.add_all(admin_role_permissions)
         session.commit()
