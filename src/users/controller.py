@@ -9,6 +9,7 @@ from . import service
 from .models import *
 from ..auth.service import CurrentUser
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from src.exceptions import UserNotFoundError
 
 router = APIRouter(
     prefix="/users",
@@ -47,7 +48,7 @@ def read_users(
 def read_user(user_id: int, session: SessionDep):
     user = session.get(User, user_id)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise UserNotFoundError(user_id)
     return user
 
 
@@ -55,7 +56,7 @@ def read_user(user_id: int, session: SessionDep):
 def update_user(user_id: int, user: UserUpdate, session: SessionDep):
     db_user = session.get(User, user_id)
     if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise UserNotFoundError(user_id)
     user_data = user.model_dump(exclude_unset=True)
     db_user.sqlmodel_update(user_data)
     session.add(db_user)
@@ -68,7 +69,7 @@ def update_user(user_id: int, user: UserUpdate, session: SessionDep):
 def delete_user(user_id: int, session: SessionDep):
     user = session.get(User, user_id)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise UserNotFoundError(user_id)
     session.delete(user)
     session.commit()
     return {"User deleted sucessfully": True}

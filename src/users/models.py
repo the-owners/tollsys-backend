@@ -61,7 +61,6 @@ class UserCreate(UserBase):
 class UserUpdate(UserBase):
   name: str | None = None # type: ignore[assignment]
   username: str | None = None # type: ignore[assignment]
-  password: str | None = None # type: ignore[assignment]
   role_id: int | None = None # type: ignore[assignment]
   toll_id: int | None = None # type: ignore[assignment]
   updated_by: int | None = None # type: ignore[assignment]
