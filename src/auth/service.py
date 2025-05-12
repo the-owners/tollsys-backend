@@ -83,24 +83,6 @@ def verify_token(token: str) -> models.TokenData:
         raise AuthenticationError()
 
 
-def register_user(session: SessionDep, register_user_request: UserCreate) -> None:
-    try:
-        create_user_model = User(
-            username=register_user_request.username,
-            name=register_user_request.name,
-            role_id=register_user_request.role_id,  # temporary db crashes later otherwise
-            toll_id=register_user_request.toll_id,  # temporary db crashes later otherwise
-            password=get_password_hash(register_user_request.password),
-        )
-        session.add(create_user_model)
-        session.commit()
-    except Exception as e:
-        logging.error(
-            f"Failed to register user: {register_user_request.username}. Error: {str(e)}"
-        )
-        raise
-
-
 def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep
 ) -> models.LoginResponse:

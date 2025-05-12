@@ -26,13 +26,10 @@ def change_password(session: SessionDep, current_user: CurrentUser, change_passw
 def read_users_me(current_user: CurrentUser):
     return current_user
 
-@router.post("/", response_model=UserPublic, status_code=status.HTTP_201_CREATED, responses={status.HTTP_201_CREATED: {"description": "User created sucessfully.", "model": UserPublic}})
-def create_user(user: UserCreate, session: SessionDep):
-    db_user = User.model_validate(user)
-    session.add(db_user)
-    session.commit()
-    session.refresh(db_user)
-    return db_user
+@router.post("/", status_code=status.HTTP_201_CREATED, responses={status.HTTP_201_CREATED: {"description": "User created sucessfully."}})
+def create_user(register_user_request: UserCreate, session: SessionDep):
+    service.register_user(session, register_user_request)
+    return {"msg": "User created sucessfully"}
 
 @router.get("/", response_model=list[UserPublic])
 def read_users(
