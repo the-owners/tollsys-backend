@@ -11,11 +11,6 @@ router = APIRouter(
     tags=['auth']
 )
 
-# rn, i have a dilemma, as i feel this should be part of /users instead
-@router.post("/", status_code=status.HTTP_201_CREATED)
-async def register_user(request: Request, db: SessionDep,
-                      register_user_request: UserCreate):
-    service.register_user(db, register_user_request)
 
 @router.post("/login", response_model=models.LoginResponse)
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],

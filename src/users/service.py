@@ -1,8 +1,9 @@
 from src.database.core import SessionDep
 from src.auth.service import CurrentUser
-from src.users.models import ChangePasswordRequest, User
+from src.users.models import ChangePasswordRequest, User, UserCreate
 from src.auth.service import get_password_hash, verify_password
 from src.exceptions import InvalidPasswordError, PasswordMismatchError, NewPasswordIsCurrentPasswordError
+import logging
 
 def change_password(session: SessionDep,
                     current_user_id: int,
@@ -18,3 +19,21 @@ def change_password(session: SessionDep,
     session.add(db_user)
     session.commit()
     session.refresh(db_user)
+
+
+def register_user(session: SessionDep, register_user_request: UserCreate) -> None:
+    try:
+        create_user_model = User(
+            username=register_user_request.username,
+            name=register_user_request.name,
+            role_id=register_user_request.role_id,  # temporary db crashes later otherwise
+            toll_id=register_user_request.toll_id,  # temporary db crashes later otherwise
+            password=get_password_hash(register_user_request.password),
+        )
+        session.add(create_user_model)
+        session.commit()
+    except Exception as e:
+        logging.error(
+            f"Failed to register user: {register_user_request.username}. Error: {str(e)}"
+        )
+        raise
