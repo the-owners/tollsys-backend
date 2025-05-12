@@ -65,3 +65,8 @@ class UserUpdate(UserBase):
   role_id: int | None = None # type: ignore[assignment]
   toll_id: int | None = None # type: ignore[assignment]
   updated_by: int | None = None # type: ignore[assignment]
+
+class ChangePasswordRequest(SQLModel):
+  current_password: str
+  new_password: str
+  new_password_confirm: str

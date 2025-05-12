@@ -15,6 +15,12 @@ router = APIRouter(
     tags=["Users"]
 )
 
+@router.post("/me/change_password", status_code=status.HTTP_200_OK, responses={status.HTTP_200_OK: {"description": "Password changed sucessfully."}})
+def change_password(session: SessionDep, current_user: CurrentUser, change_password_request: ChangePasswordRequest):
+    service.change_password(session, current_user.id, change_password_request)
+    return {"msg": "Password changed sucessfully"}
+
+
 @router.get("/me", response_model=UserPublic)
 def read_users_me(current_user: CurrentUser):
     return current_user
