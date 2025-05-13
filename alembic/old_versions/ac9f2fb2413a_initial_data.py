@@ -25,7 +25,7 @@ def upgrade() -> None:
     # this line below is gpt sorcery ngl
     metadata = op.get_context().opts['target_metadata']
     user_table = metadata.tables['User']
-    role_table = metadata.tables['Role']
+    role_table = metadata.tables['role']
     toll_table = metadata.tables['Toll']
 
     # Insert initial data (handles circular references)

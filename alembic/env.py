@@ -21,6 +21,11 @@ sys.path.append("./src") # so this is dangerous lmao
 from src.database.models import SQLModel # type: ignore[import-not-found]
 #from models import *
 
+from src.roles.models import Role
+from src.users.models import User
+from src.permissions.models import Permission
+from src.role_permissions.models import RolePermission
+
 # suppress circular dependency warnings
 warnings.filterwarnings(
     "ignore",
@@ -63,6 +68,7 @@ def run_migrations_offline() -> None:
     """
     url = DATABASE_URL
     context.configure(
+
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
@@ -70,7 +76,10 @@ def run_migrations_offline() -> None:
         render_as_batch=True,  # important for sqlite
         # this tells alembic to proceed despite circular dependencies
         user_module_prefix="sqlmodel.sql.sqltypes",
+        compare_type=True,
+        include_schemas=True,
         process_revision_directives=lambda *args, **kwargs: None
+
     )
 
     with context.begin_transaction():

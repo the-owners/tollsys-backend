@@ -2,13 +2,13 @@ import datetime
 from datetime import datetime
 import decimal
 from typing import Optional
-from sqlmodel import Field, SQLModel, Column
+from sqlmodel import Field, SQLModel, Column, Relationship
 from enum import Enum
 import sqlalchemy as sa
 from sqlalchemy.sql import func
 from sqlalchemy import Index, DateTime
 from ..tolls.models import * #le quitamos el asterisco para evitar problemas de importación circular
-from ..roles.models import RolePublic
+from ..roles.models import Role, RolePublic
 
 class UserBase(SQLModel):
   name: str
@@ -19,6 +19,8 @@ class UserBase(SQLModel):
 
 class User(UserBase, table=True):
   __tablename__ = 'User'
+  role_id: Optional[int] = Field(default=None, foreign_key="Role.id")
+  role: Optional["Role"] = Relationship(back_populates="users")
 
   id: int | None = Field(default=None, primary_key=True)
   password: str | None
