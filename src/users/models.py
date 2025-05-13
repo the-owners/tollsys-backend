@@ -1,4 +1,5 @@
 import datetime
+from datetime import datetime
 import decimal
 from typing import Optional
 from sqlmodel import Field, SQLModel, Column
@@ -7,7 +8,7 @@ import sqlalchemy as sa
 from sqlalchemy.sql import func
 from sqlalchemy import Index, DateTime
 from ..tolls.models import * #le quitamos el asterisco para evitar problemas de importación circular
-from ..roles.models import *
+from ..roles.models import RolePublic
 
 class UserBase(SQLModel):
   name: str
@@ -31,9 +32,9 @@ class User(UserBase, table=True):
   )
 
   # we should move this to a mixin in a future refactor after everything is working
-  created_at: datetime.datetime | None = Field(default_factory=lambda: datetime.datetime.now())
+  created_at: datetime | None = Field(default_factory=datetime.utcnow)
   created_by: int | None = Field(default=None, foreign_key='User.id')
-  updated_at: datetime.datetime | None = Field(default=None, sa_column=Column(DateTime(), onupdate=func.now()))
+  updated_at: datetime | None = Field(default=None, sa_column=Column(DateTime(), onupdate=func.now()))
   updated_by: int | None = Field(default=None, foreign_key='User.id')
 
 class UserPublic(UserBase):
@@ -45,9 +46,9 @@ class UserPublic(UserBase):
   role: Optional[RolePublic] = None
   toll: Optional[TollPublic] = None
   # this shouldn't be nullable but fastapi crashes for some reason as the db isn't in a good state for now
-  created_at: datetime.datetime | None = None
+  created_at: datetime | None = None
   created_by: int | None = None
-  updated_at: datetime.datetime | None = None
+  updated_at: datetime | None = None
   updated_by: int | None = None
 
 

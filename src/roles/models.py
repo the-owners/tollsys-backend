@@ -1,30 +1,38 @@
-import datetime
-import decimal
-from typing import Optional
-from sqlmodel import Field, SQLModel
-from enum import Enum
-import sqlalchemy as sa
-from sqlalchemy.sql import func
-from sqlalchemy import Index
+from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional, List, TYPE_CHECKING
+from datetime import datetime
 
-class Role(SQLModel, table=True):
+if TYPE_CHECKING:
+    from src.users.models import User
+    from src.role_permissions.models import RolePermission
 
-    __tablename__ = 'Role'
+class RoleBase(SQLModel):
+    name: str = Field(index=True, max_length=50)
+    description: Optional[str] = Field(default=None, max_length=255)
 
+class Role(RoleBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    name: Optional[str]
-    created_at: Optional[datetime.datetime] = Field(default=None)
-    created_by: Optional[int] = Field(default=None, foreign_key='User.id')
-    updated_at: Optional[datetime.datetime] = Field(default=None)
-    updated_by: Optional[int] = Field(default=None, foreign_key='User.id')
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_by: int
+    updated_at: Optional[datetime] = None
+    updated_by: Optional[int] = None
+    
+    users: List["User"] = Relationship(back_populates="role")
+    permissions: List["RolePermission"] = Relationship(back_populates="role")
 
-    __table_args__ = (
-                
-    Index('idx_role_name', 'name'),
-    Index('idx_role_created_by', 'created_by'),
-    Index('idx_role_updated_by', 'updated_by'),
-    )
+class RoleCreate(RoleBase):
+    pass
 
-class RolePublic(SQLModel):
-    id: int | None = None
-    name: str | None = None
+class RoleRead(RoleBase):
+    id: int
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+class RoleUpdate(SQLModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+class RolePublic(RoleBase):
+    id: int
+    created_at: datetime
+    updated_at: Optional[datetime]
