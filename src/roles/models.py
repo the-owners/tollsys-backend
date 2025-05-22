@@ -1,8 +1,8 @@
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, List, TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from src.permissions.models import PermissionRead
+
+from src.permissions.models import PermissionRead
 from datetime import datetime
 
 if TYPE_CHECKING:
@@ -23,7 +23,7 @@ class RoleBase(SQLModel):
     )
 
 class Role(RoleBase, table=True):
-    __tablename__ = "Role"  # Nombre explícito en plural
+    __tablename__ = "Role"  
     
     id: Optional[int] = Field(
         default=None,
