@@ -8,6 +8,8 @@ from ..database.core import SessionDep
 from . import  models
 from . import service
 from .models import *
+from ..auth.service import CurrentUser
+
 
 router = APIRouter(
     prefix="/vehicle_types",
@@ -15,7 +17,7 @@ router = APIRouter(
 )
 
 @router.post("/", response_model=VehicleTypePublic, status_code=status.HTTP_201_CREATED, responses={status.HTTP_201_CREATED: {"description": "Vehicle type created sucessfully.", "model": VehicleTypePublic}})
-def create_vehicle_type(vehicle_type: VehicleTypeCreate, session: SessionDep):
+def create_vehicle_type(current_user: CurrentUser, vehicle_type: VehicleTypeCreate, session: SessionDep):
     db_vehicle_type = VehicleType.model_validate(vehicle_type)
     session.add(db_vehicle_type)
     session.commit()
@@ -26,6 +28,7 @@ def create_vehicle_type(vehicle_type: VehicleTypeCreate, session: SessionDep):
 
 @router.get("/", response_model=list[VehicleTypePublic])
 def read_vehicle_types(
+    current_user: CurrentUser,
     session: SessionDep,
     offset: int = 0,
     limit: Annotated[int, Query(le=100)] = 100,
@@ -35,7 +38,7 @@ def read_vehicle_types(
 
 
 @router.get("/{vehicle_type_id}", response_model=VehicleTypePublic)
-def read_vehicle_type(vehicle_type_id: int, session: SessionDep):
+def read_vehicle_type(current_user: CurrentUser, vehicle_type_id: int, session: SessionDep):
     vehicle_type = session.get(VehicleType, vehicle_type)
     if not vehicle_type:
         raise HTTPException(status_code=404, detail="Vehicle Type not found")
@@ -43,7 +46,7 @@ def read_vehicle_type(vehicle_type_id: int, session: SessionDep):
 
 
 @router.patch("/{vehicle_type_id}", response_model=VehicleTypePublic)
-def update_vehicle_type(vehicle_type_id: int, vehicle_type: VehicleTypeUpdate, session: SessionDep):
+def update_vehicle_type(current_user: CurrentUser, vehicle_type_id: int, vehicle_type: VehicleTypeUpdate, session: SessionDep):
     db_vehicle_type = session.get(VehicleType, vehicle_type_id)
     if not db_vehicle_type:
         raise HTTPException(status_code=404, detail="Vehicle type not found")
@@ -56,7 +59,7 @@ def update_vehicle_type(vehicle_type_id: int, vehicle_type: VehicleTypeUpdate, s
 
 
 @router.delete("/{vehicle_type_id}")
-def delete_vehicle_type(vehicle_type_id: int, session: SessionDep):
+def delete_vehicle_type(current_user: CurrentUser, vehicle_type_id: int, session: SessionDep):
     vehicle_type = session.get(VehicleType, vehicle_type_id)
     if not vehicle_type:
         raise HTTPException(status_code=404, detail="Vehicle type not found")

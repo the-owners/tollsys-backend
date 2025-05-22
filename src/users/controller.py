@@ -20,7 +20,7 @@ def read_users_me(current_user: CurrentUser):
     return current_user
 
 @router.post("/", response_model=UserPublic, status_code=status.HTTP_201_CREATED, responses={status.HTTP_201_CREATED: {"description": "User created sucessfully.", "model": UserPublic}})
-def create_user(user: UserCreate, session: SessionDep):
+def create_user(current_user: CurrentUser, user: UserCreate, session: SessionDep):
     db_user = User.model_validate(user)
     session.add(db_user)
     session.commit()
@@ -29,6 +29,7 @@ def create_user(user: UserCreate, session: SessionDep):
 
 @router.get("/", response_model=list[UserPublic])
 def read_users(
+    current_user: CurrentUser,
     session: SessionDep,
     offset: int = 0,
     limit: Annotated[int, Query(le=100)] = 100,
@@ -38,7 +39,7 @@ def read_users(
 
 
 @router.get("/{user_id}", response_model=UserPublic)
-def read_user(user_id: int, session: SessionDep):
+def read_user(current_user: CurrentUser, user_id: int, session: SessionDep):
     user = session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -46,7 +47,7 @@ def read_user(user_id: int, session: SessionDep):
 
 
 @router.patch("/{user_id}", response_model=UserPublic)
-def update_user(user_id: int, user: UserUpdate, session: SessionDep):
+def update_user(current_user: CurrentUser, user_id: int, user: UserUpdate, session: SessionDep):
     db_user = session.get(User, user_id)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -59,7 +60,7 @@ def update_user(user_id: int, user: UserUpdate, session: SessionDep):
 
 
 @router.delete("/{user_id}")
-def delete_user(user_id: int, session: SessionDep):
+def delete_user(current_user: CurrentUser, user_id: int, session: SessionDep):
     user = session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
