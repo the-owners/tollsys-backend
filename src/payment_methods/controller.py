@@ -25,15 +25,31 @@ def create_payment_method(payment_method: PaymentMethodCreate, current_user: Cur
     # return JSONResponse(status_code=status.HTTP_201_CREATED, content=jsonable_encoder(db_payment_method))
 
 
-@router.get("/", response_model=list[PaymentMethodPublic])
+@router.get("/", response_model=PaymentMethodResponse)
 def read_payment_methods(
     session: SessionDep,
     current_user: CurrentUser,
-    offset: int = 0,
-    limit: Annotated[int, Query(le=100)] = 100,
+    page: int = 1,
+    per_page: Annotated[int, Query(le=100)] = 10,
+    search: str = "",  # puedes usarlo para filtrar más adelante
 ):
-    payment_methods = session.exec(select(PaymentMethod).offset(offset).limit(limit)).all()
-    return payment_methods
+    offset = (page - 1) * per_page
+
+    statement = select(PaymentMethod).offset(offset).limit(per_page)
+    payment_methods = session.exec(statement).all()
+
+    total = len(payment_methods)
+    total_pages = (total + per_page - 1) // per_page
+
+    metadata = Metadata(
+        page=page,
+        total=total,
+        per_page=per_page,
+        total_pages=total_pages,
+        search=search
+    )
+
+    return PaymentMethodResponse(metadata=metadata, data=payment_methods)
 
 
 @router.get("/{payment_method_id}", response_model=PaymentMethodPublic)

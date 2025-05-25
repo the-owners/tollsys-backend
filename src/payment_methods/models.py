@@ -1,10 +1,11 @@
-from typing import Annotated
+from typing import Annotated, Generic, List, TypeVar
 from datetime import datetime
 from fastapi import Depends, HTTPException, Query
 from sqlmodel import Column, Field, Session, SQLModel, create_engine, select, column
 import sqlalchemy as sa
 from sqlalchemy.sql import func
 from sqlalchemy import DateTime
+from pydantic import BaseModel
 
 class PaymentMethodBase(SQLModel):
     name: str 
@@ -40,3 +41,14 @@ class PaymentMethodUpdate(PaymentMethodBase):
     icon:str | None = None
     active: bool | None = None # type: ignore[assignment]
     updated_by: int | None = None
+
+class Metadata(BaseModel):
+    page: int
+    total: int
+    per_page: int
+    total_pages: int
+    search: str
+
+class PaymentMethodResponse(BaseModel):
+    metadata: Metadata
+    data: List[PaymentMethodPublic]
