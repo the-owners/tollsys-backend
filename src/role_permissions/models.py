@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from src.permissions.models import Permission
 
 class RolePermissionBase(SQLModel):
-    role_id: int = Field(foreign_key="Role.id")
+    role_id: int = Field(foreign_key="role.id")
     permission_id: int = Field(foreign_key="permission.id")
 
 class RolePermission(RolePermissionBase, table=True):
