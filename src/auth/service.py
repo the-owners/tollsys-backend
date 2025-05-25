@@ -1,4 +1,4 @@
-from typing import Annotated, Optional
+from typing import Annotated
 from datetime import timedelta, datetime, timezone
 
 import passlib
@@ -9,8 +9,6 @@ from jwt import PyJWTError
 from jwt.exceptions import InvalidTokenError
 
 from fastapi import Depends, FastAPI, HTTPException, status
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 
 from . import models
@@ -64,24 +62,14 @@ def authenticate_user(username: str, password: str, session: SessionDep) -> User
 
 
 def create_access_token(
-    username: str, 
-    user_id: int, 
-    role_id: int,
-    expires_delta: timedelta,
-    additional_claims: Optional[dict] = None
+    username: str, user_id: int, role_id: int, expires_delta: timedelta
 ) -> str:
-    """Crea un token JWT con claims adicionales para permisos"""
     encode = {
-        "sub": str(user_id),
         "username": username,
         "user_id": user_id,
         "role_id": role_id,
         "exp": datetime.now(timezone.utc) + expires_delta,
     }
-    
-    if additional_claims:
-        encode.update(additional_claims)
-    
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -135,8 +123,8 @@ def login(
             username=user.username, # type: ignore[union-attr]
             role_id=user.role_id, # type: ignore[union-attr]
             toll_id=user.toll_id, # type: ignore[union-attr]
-            role=session.get(Role, user.role_id), # type: ignore[union-attr]
-            toll=session.get(Toll, user.toll_id) # type: ignore[union-attr]
+            role = session.get(Role, user.role_id),
+            toll = session.get(Toll, user.toll_id)
         ),
     )
 
@@ -173,100 +161,3 @@ def logout(
     # for expiring tokens so, we'll probably manage it using cookies down the road
     pass
 
-
-async def get_current_user(
-    token: Annotated[str, Depends(oauth2_bearer)], 
-    session: SessionDep
-) -> User:
-    """Obtiene el usuario actual basado en el token JWT"""
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id = payload.get("user_id")
-        if user_id is None:
-            raise AuthenticationError()
-        
-        user = session.get(User, user_id)
-        if user is None:
-            raise AuthenticationError()
-            
-        return user
-    except (InvalidTokenError, PyJWTError) as e:
-        logging.warning(f"Token verification failed: {str(e)}")
-        raise AuthenticationError()
-    
-
-    async def get_user_permissions(user: User, session: SessionDep) -> list[str]:
-        """Obtiene todos los permisos del usuario basado en su rol"""
-        if not user.role_id:
-            return []
-        
-        permissions = session.exec(
-            select(Permission.name).join(RolePermission).where(
-                RolePermission.role_id == user.role_id
-            )
-        ).all()
-        
-        return permissions
-
-def has_permission(permission_name: str):
-    """Factory para dependencias que verifican permisos"""
-    async def permission_checker(
-        user: CurrentUser,
-        session: SessionDep
-    ):
-        permissions = await get_user_permissions(user, session)
-        if permission_name not in permissions:
-            raise PermissionDeniedError(
-                detail=f"Requires permission: {permission_name}"
-            )
-        return user
-    
-    return permission_checker
-
-# Middleware para verificación de tokens en todas las rutas
-class AuthenticationMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        # Excluir rutas públicas (login, docs, etc.)
-        public_routes = ["/auth/login", "/docs", "/openapi.json"]
-        if request.url.path in public_routes:
-            return await call_next(request)
-            
-        # Verificar token en el header Authorization
-        auth_header = request.headers.get("Authorization")
-        if not auth_header or not auth_header.startswith("Bearer "):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Missing or invalid authorization header"
-            )
-            
-        token = auth_header.split(" ")[1]
-        try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            request.state.user_id = payload.get("user_id")
-            request.state.role_id = payload.get("role_id")
-        except (InvalidTokenError, PyJWTError):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token"
-            )
-            
-        response = await call_next(request)
-        return response
-
-class AuditLoggingMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        logging.info(f"Request: {request.method} {request.url.path}")
-        
-        response = await call_next(request)
-        
-        if hasattr(request.state, 'user_id'):
-            logging.info(
-                f"User {request.state.user_id} accessed {request.url.path} "
-                f"with status {response.status_code}"
-            )
-            
-        return response
-
-def setup_middlewares(app: FastAPI):
-    app.add_middleware(AuthenticationMiddleware)
-    app.add_middleware(AuditLoggingMiddleware)

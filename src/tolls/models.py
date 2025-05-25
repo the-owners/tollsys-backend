@@ -37,6 +37,7 @@ class TollPublic(TollBase):
     legal_name: str
     address: str
 
+
 class TollCreate(TollBase):
     tax_id: str 
     legal_name: str
