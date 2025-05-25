@@ -1,8 +1,8 @@
-"""RBAC
+"""fix_role_relations
 
-Revision ID: 0a0a99381414
+Revision ID: 28ce0805a660
 Revises: 
-Create Date: 2025-05-13 22:39:39.693980
+Create Date: 2025-05-23 21:01:57.646633
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel.sql.sqltypes
 
 
 # revision identifiers, used by Alembic.
-revision: str = '0a0a99381414'
+revision: str = '28ce0805a660'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -50,6 +50,11 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['updated_by'], ['User.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    with op.batch_alter_table('Toll', schema=None) as batch_op:
+        batch_op.create_index('idx_toll_created_by', ['created_by'], unique=False)
+        batch_op.create_index('idx_toll_tax_id', ['tax_id'], unique=False)
+        batch_op.create_index('idx_toll_updated_by', ['updated_by'], unique=False)
+
     op.create_table('User',
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('username', sa.String(), nullable=False),
@@ -161,6 +166,11 @@ def downgrade() -> None:
         batch_op.drop_index('idx_user_created_by')
 
     op.drop_table('User')
+    with op.batch_alter_table('Toll', schema=None) as batch_op:
+        batch_op.drop_index('idx_toll_updated_by')
+        batch_op.drop_index('idx_toll_tax_id')
+        batch_op.drop_index('idx_toll_created_by')
+
     op.drop_table('Toll')
     with op.batch_alter_table('Role', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_Role_name'))

@@ -13,6 +13,14 @@ import sys
 import warnings
 import sqlalchemy as sa
 
+
+
+def include_object(object, name, type_, reflected, compare_to):
+    """Filtra tablas problemáticas durante la generación"""
+    if type_ == "table" and name.lower() in ["rolepermission", "userrole"]:   ###
+        return False
+    return True
+
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///tollsys-backend.db")
 
@@ -78,6 +86,7 @@ def run_migrations_offline() -> None:
         user_module_prefix="sqlmodel.sql.sqltypes",
         compare_type=True,
         include_schemas=True,
+        include_object=include_object, ###
         process_revision_directives=lambda *args, **kwargs: None
 
     )
