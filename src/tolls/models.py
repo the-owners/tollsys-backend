@@ -36,10 +36,6 @@ class TollPublic(TollBase):
     tax_id: str 
     legal_name: str
     address: str
-    created_at: datetime | None
-    created_by: int | None
-    updated_at: datetime | None
-    updated_by: int | None
 
 
 class TollCreate(TollBase):
