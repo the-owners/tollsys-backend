@@ -22,7 +22,8 @@ if os.path.exists(dotenv_path):
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///tollsys-backend.db")
 
 # Importar metadata de tus modelos
-from src.database import models
+from src.database.core import SQLModel
+
 from sqlmodel import SQLModel
 #from src.database.models import SQLModel  # Asegúrate de que src/database/__init__.py exista
 
