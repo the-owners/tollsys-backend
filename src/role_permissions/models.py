@@ -1,23 +1,34 @@
-from typing import Optional, List
-from sqlmodel import SQLModel, Field, Index
-import datetime
+from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional, TYPE_CHECKING
+from datetime import datetime
 
-class RolePermission(SQLModel, table=True):
+if TYPE_CHECKING:
+    from src.roles.models import Role
+    from src.permissions.models import Permission
 
-    __tablename__ = 'RolePermission'
+class RolePermissionBase(SQLModel):
+    role_id: int = Field(foreign_key="role.id")
+    permission_id: int = Field(foreign_key="permission.id")
 
+class RolePermission(RolePermissionBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    role_id: Optional[int] = Field(foreign_key='Role.id')
-    permission_id: Optional[int] = Field(foreign_key='Permission.id')
-    created_at: Optional[datetime.datetime] = Field(default=None)
-    created_by: Optional[int] = Field(default=None, foreign_key='User.id')
-    updated_at: Optional[datetime.datetime] = Field(default=None)
-    updated_by: Optional[int] = Field(default=None, foreign_key='User.id')
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_by: int
+    updated_at: Optional[datetime] = None
+    updated_by: Optional[int] = None
+    
+    role: "Role" = Relationship(back_populates="permissions")
+    permission: "Permission" = Relationship(back_populates="roles")
 
-    __table_args__ = (
-                
-    Index('idx_role_permission_role_id', 'role_id'),
-    Index('idx_role_permission_permission_id', 'permission_id'),
-    Index('idx_role_permission_created_by', 'created_by'),
-    Index('idx_role_permission_updated_by', 'updated_by'),
-            )
+
+class RolePermissionCreate(RolePermissionBase):
+    pass
+
+class RolePermissionRead(RolePermissionBase):
+    id: int
+    created_at: datetime
+    created_by: int
+
+class RolePermissionUpdate(SQLModel):
+    role_id: Optional[int] = None
+    permission_id: Optional[int] = None

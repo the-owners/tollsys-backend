@@ -1,18 +1,10 @@
-from typing import Annotated, Union, Any
+from typing import Annotated, Any
 
-from fastapi import Depends, FastAPI, HTTPException, Query
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from fastapi import Depends
+from sqlmodel import Session, create_engine
 
 import os
 from dotenv import load_dotenv
-
-from ..tolls.models import *
-from ..users.models import *
-from ..roles.models import *
-from ..permissions.models import *
-from ..role_permissions.models import *
-import datetime
-import logging
 
 load_dotenv()
 
@@ -25,75 +17,9 @@ if DATABASE_URL.startswith("sqlite"):
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
 
 
-def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
-
-
 def get_session():
     with Session(engine) as session:
         yield session
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
-
-# this is, not ideal, but it's the best workaround I could find for now
-# it's shitty, at best. that db is screaming for a refactor honestly.
-
-def initialize_first_data():
-    with Session(engine) as session:
-        existing_user = session.exec(select(User)).first()
-        if existing_user:
-            return  # data already initialized, do nothing.
-        
-        toll = Toll(
-            tax_id="INITIAL001",
-            legal_name="Main Toll Plaza",
-            address="Initial Address",
-            created_at=datetime.datetime.now(datetime.timezone.utc),
-            created_by=None # who's going to create this? god? us bro
-        )
-        session.add(toll)
-        
-        role = Role(
-            name="Admin",
-            created_at=datetime.datetime.now(datetime.timezone.utc),
-            created_by=None # no one exists yet!
-        )
-        session.add(role)
-        
-        session.commit()
-        
-        user = User(
-            name="System Admin",
-            username="admin",
-            password="securepassword",
-            role_id=role.id,
-            toll_id=toll.id,
-            created_at=datetime.datetime.now(datetime.timezone.utc),
-            created_by=None # duh
-        )
-        
-        session.add(user)
-        session.commit()
-        
-        # mess solved, phew
-        toll.created_by = user.id
-        role.created_by = user.id
-        session.add(toll)
-        session.add(role)
-        session.commit()
-
-        # permissions stuff
-        permissions = [
-            Permission(name="manage_users"), # id 1
-            Permission(name="process_payments") # id 2
-        ]
-        session.add_all(permissions)
-        session.commit()
-
-        admin_role_permissions = [
-            RolePermission(role_id=1, permission_id=1),
-            RolePermission(role_id=1, permission_id=2)
-        ]
-        session.add_all(admin_role_permissions)
-        session.commit()
