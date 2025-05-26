@@ -1,10 +1,11 @@
-from typing import Annotated
+from typing import Annotated, List
 from datetime import datetime
 from fastapi import Depends, HTTPException, Query
 from sqlmodel import Column, Field, Session, SQLModel, create_engine, select, column
 import sqlalchemy as sa
 from sqlalchemy.sql import func
 from sqlalchemy import DateTime
+from pydantic import BaseModel
 
 class VehicleTypeBase(SQLModel):
     name: str 
@@ -45,3 +46,14 @@ class VehicleTypeUpdate(VehicleTypeBase):
     rate:float | None = None
     active: bool | None = None # type: ignore[assignment]
     updated_by: int | None = None
+
+class Metadata(BaseModel):
+    page: int
+    total: int
+    per_page: int
+    total_pages: int
+    search: str
+
+class VehicleTypeResponse(BaseModel):
+    metadata: Metadata
+    data: List[VehicleTypePublic]
