@@ -6,6 +6,8 @@ from . import service
 from ..users.models import UserCreate
 from fastapi.security import OAuth2PasswordRequestForm
 from ..database.core import SessionDep
+from .service import oauth2_bearer # para probar el token en Swagger
+
 router = APIRouter(
     prefix='/auth',
     tags=['auth']
@@ -29,3 +31,13 @@ async def logout(
 ):
     service.logout(current_user, reason, observations, db)
     return {"message": "Successfully logged out"}
+
+
+
+@router.get("/me", dependencies=[Depends(oauth2_bearer)])
+def me_protected():
+    """
+    Ruta dummy para que Swagger genere el esquema OAuth2.
+    No hace falta que devuelva nada real.
+    """
+    return {"ok": True}
