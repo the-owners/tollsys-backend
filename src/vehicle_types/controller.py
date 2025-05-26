@@ -25,6 +25,14 @@ def create_vehicle_type(current_user: CurrentUser, vehicle_type: VehicleTypeCrea
     return db_vehicle_type
     # return JSONResponse(status_code=status.HTTP_201_CREATED, content=jsonable_encoder(db_vehicle_type))
 
+@router.get("/active", response_model=List[VehicleTypePublic])
+def read_active_vehicle_types(
+        session:SessionDep,
+        current_user: CurrentUser,
+):
+    query = select(VehicleType).where(VehicleType.active == True)
+    results = session.exec(query).all()
+    return results
 
 @router.get("/", response_model=VehicleTypeResponse)
 def read_vehicle_types(
@@ -35,9 +43,12 @@ def read_vehicle_types(
     search: str = "",  # puedes usarlo para filtrar más adelante
 ):
     offset = (page - 1) * per_page
-    statement = select(VehicleType).offset(offset).limit(per_page)
-    vehicle_types = session.exec(statement).all()
-    total = len(vehicle_types)
+    base_query = select(VehicleType)
+    if search:
+        base_query = base_query.where(VehicleType.name.ilike(f"%{search}%"))
+
+    results = session.exec(base_query.offset(offset).limit(per_page)).all()
+    total = len(results)
     total_pages = (total + per_page - 1) // per_page
 
     metadata = Metadata(
@@ -47,8 +58,11 @@ def read_vehicle_types(
         total_pages=total_pages,
         search=search
     )
+    
 
-    return VehicleTypeResponse(metadata=metadata, data= vehicle_types)
+    return VehicleTypeResponse(metadata=metadata, data= results)
+
+
 
 
 @router.get("/{vehicle_type_id}", response_model=VehicleTypePublic)

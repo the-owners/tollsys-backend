@@ -35,10 +35,14 @@ def read_payment_methods(
 ):
     offset = (page - 1) * per_page
 
-    statement = select(PaymentMethod).offset(offset).limit(per_page)
-    payment_methods = session.exec(statement).all()
+    # Filtro opcional por nombre o descripción
+    base_query = select(PaymentMethod)
+    if search:
+        base_query = base_query.where(PaymentMethod.name.ilike(f"%{search}%"))
 
-    total = len(payment_methods)
+    # Obtener total filtrado
+    results = session.exec(base_query.offset(offset).limit(per_page)).all()
+    total = len(results)
     total_pages = (total + per_page - 1) // per_page
 
     metadata = Metadata(
@@ -49,7 +53,16 @@ def read_payment_methods(
         search=search
     )
 
-    return PaymentMethodResponse(metadata=metadata, data=payment_methods)
+    return PaymentMethodResponse(metadata=metadata, data=results)
+
+@router.get("/active", response_model=List[PaymentMethodPublic])
+def read_active_payment_methods(
+    session: SessionDep,
+    current_user: CurrentUser,
+):
+    query = select(PaymentMethod).where(PaymentMethod.active == True)
+    results = session.exec(query).all()
+    return results
 
 
 @router.get("/{payment_method_id}", response_model=PaymentMethodPublic)
