@@ -55,3 +55,9 @@ class UserPublic(UserBase):
     id: int
     role: Optional[RolePublic] = None
     toll: Optional[TollPublic] = None
+
+
+class ChangePasswordRequest(SQLModel):
+  current_password: str
+  new_password: str
+  new_password_confirm: str
