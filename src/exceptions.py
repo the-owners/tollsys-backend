@@ -20,3 +20,7 @@ class InvalidPasswordError(UserError):
 class AuthenticationError(HTTPException):
     def __init__(self, message: str = "Could not validate user"):
         super().__init__(status_code=401, detail=message, headers={"WWW-Authenticate": "Bearer"})
+
+class NewPasswordIsCurrentPasswordError(UserError):
+    def __init__(self):
+        super().__init__(status_code=400, detail="New password should be different")

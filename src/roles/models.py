@@ -28,3 +28,6 @@ class Role(SQLModel, table=True):
 class RolePublic(SQLModel):
     id: int | None = None
     name: str | None = None
+
+class RoleCreate(SQLModel):
+    name: str

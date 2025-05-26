@@ -25,15 +25,44 @@ def create_payment_method(payment_method: PaymentMethodCreate, current_user: Cur
     # return JSONResponse(status_code=status.HTTP_201_CREATED, content=jsonable_encoder(db_payment_method))
 
 
-@router.get("/", response_model=list[PaymentMethodPublic])
+@router.get("/", response_model=PaymentMethodResponse)
 def read_payment_methods(
     session: SessionDep,
     current_user: CurrentUser,
-    offset: int = 0,
-    limit: Annotated[int, Query(le=100)] = 100,
+    page: int = 1,
+    per_page: Annotated[int, Query(le=100)] = 10,
+    search: str = "",  # puedes usarlo para filtrar más adelante
 ):
-    payment_methods = session.exec(select(PaymentMethod).offset(offset).limit(limit)).all()
-    return payment_methods
+    offset = (page - 1) * per_page
+
+    # Filtro opcional por nombre o descripción
+    base_query = select(PaymentMethod)
+    if search:
+        base_query = base_query.where(PaymentMethod.name.ilike(f"%{search}%"))
+
+    # Obtener total filtrado
+    results = session.exec(base_query.offset(offset).limit(per_page)).all()
+    total = len(results)
+    total_pages = (total + per_page - 1) // per_page
+
+    metadata = Metadata(
+        page=page,
+        total=total,
+        per_page=per_page,
+        total_pages=total_pages,
+        search=search
+    )
+
+    return PaymentMethodResponse(metadata=metadata, data=results)
+
+@router.get("/active", response_model=List[PaymentMethodPublic])
+def read_active_payment_methods(
+    session: SessionDep,
+    current_user: CurrentUser,
+):
+    query = select(PaymentMethod).where(PaymentMethod.active == True)
+    results = session.exec(query).all()
+    return results
 
 
 @router.get("/{payment_method_id}", response_model=PaymentMethodPublic)
