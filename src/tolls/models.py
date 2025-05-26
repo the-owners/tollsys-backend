@@ -1,7 +1,7 @@
 from typing import Annotated
 from datetime import datetime
 from fastapi import Depends, HTTPException, Query
-from sqlmodel import Column, Field, Session, SQLModel, create_engine, select, column
+from sqlmodel import Column, Field, Session, SQLModel, create_engine, select, column, Index
 import sqlalchemy as sa
 from sqlalchemy.sql import func
 from sqlalchemy import DateTime
@@ -23,20 +23,26 @@ class Toll(TollBase, table=True):
     updated_at: datetime | None = Field(default=None, sa_column=Column(DateTime(), onupdate=func.now()))
     updated_by: int | None = Field(default=None, foreign_key='User.id')
 
+    __table_args__ = (
+                
+    Index('idx_toll_tax_id', 'tax_id'),
+    Index('idx_toll_created_by', 'created_by'),
+    Index('idx_toll_updated_by', 'updated_by'),
+            )
+
+
 class TollPublic(TollBase):
     id: int
     tax_id: str 
     legal_name: str
     address: str
-    created_at: datetime | None
-    created_by: int | None
-    updated_at: datetime | None
-    updated_by: int | None
+
 
 class TollCreate(TollBase):
     tax_id: str 
     legal_name: str
     address: str
+
 
 class TollUpdate(TollBase):
     tax_id: str | None = None # type: ignore[assignment]

@@ -8,6 +8,7 @@ from ..database.core import SessionDep
 from . import  models
 from . import service
 from .models import *
+from ..auth.service import CurrentUser
 
 router = APIRouter(
     prefix="/payment_methods",
@@ -15,7 +16,7 @@ router = APIRouter(
 )
 
 @router.post("/", response_model=PaymentMethodPublic, status_code=status.HTTP_201_CREATED, responses={status.HTTP_201_CREATED: {"description": "Payment method created sucessfully.", "model": PaymentMethodPublic}})
-def create_payment_method(payment_method: PaymentMethodCreate, session: SessionDep):
+def create_payment_method(payment_method: PaymentMethodCreate, current_user: CurrentUser, session: SessionDep):
     db_payment_method = PaymentMethod.model_validate(payment_method)
     session.add(db_payment_method)
     session.commit()
@@ -27,6 +28,7 @@ def create_payment_method(payment_method: PaymentMethodCreate, session: SessionD
 @router.get("/", response_model=list[PaymentMethodPublic])
 def read_payment_methods(
     session: SessionDep,
+    current_user: CurrentUser,
     offset: int = 0,
     limit: Annotated[int, Query(le=100)] = 100,
 ):
@@ -35,7 +37,7 @@ def read_payment_methods(
 
 
 @router.get("/{payment_method_id}", response_model=PaymentMethodPublic)
-def read_payment_method(payment_method_id: int, session: SessionDep):
+def read_payment_method(payment_method_id: int, session: SessionDep, current_user: CurrentUser):
     payment_method = session.get(PaymentMethod, payment_method_id)
     if not payment_method:
         raise HTTPException(status_code=404, detail="Payment Method not found")
@@ -43,7 +45,7 @@ def read_payment_method(payment_method_id: int, session: SessionDep):
 
 
 @router.patch("/{payment_method_id}", response_model=PaymentMethodPublic)
-def update_payment_method(payment_method_id: int, payment_method: PaymentMethodUpdate, session: SessionDep):
+def update_payment_method(payment_method_id: int, payment_method: PaymentMethodUpdate, session: SessionDep, current_user: CurrentUser):
     db_payment_method = session.get(PaymentMethod, payment_method_id)
     if not db_payment_method:
         raise HTTPException(status_code=404, detail="Payment Method not found")
@@ -56,7 +58,7 @@ def update_payment_method(payment_method_id: int, payment_method: PaymentMethodU
 
 
 @router.delete("/{payment_method_id}")
-def delete_payment_method(payment_method_id: int, session: SessionDep):
+def delete_payment_method(payment_method_id: int, session: SessionDep, current_user: CurrentUser):
     payment_method = session.get(PaymentMethod, payment_method_id)
     if not payment_method:
         raise HTTPException(status_code=404, detail="Payment Method not found")

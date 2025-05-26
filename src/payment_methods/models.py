@@ -28,10 +28,6 @@ class PaymentMethodPublic(PaymentMethodBase):
     name: str
     icon:str
     active: bool 
-    created_at: datetime | None
-    created_by: int | None
-    updated_at: datetime | None
-    updated_by: int | None
     
 
 class PaymentMethodCreate(PaymentMethodBase):
