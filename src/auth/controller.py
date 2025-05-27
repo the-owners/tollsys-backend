@@ -1,6 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, Request, Body, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.exc import IntegrityError
 from ..database.core import SessionDep
 from . import service, models
 from .service import oauth2_bearer
@@ -9,10 +10,7 @@ from ..roles.models import Role
 from ..permissions.models import Permission
 from ..role_permissions.models import RolePermission
 
-router = APIRouter(
-    prefix="/auth",
-    tags=["auth"]
-)
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def register_user(
@@ -20,8 +18,17 @@ async def register_user(
     db: SessionDep,
     register_user_request: UserCreate
 ):
-    service.register_user(db, register_user_request)
-    return {"message": "User registered successfully"}
+    try:
+        service.register_user(db, register_user_request)
+        return {"message": "User registered successfully"}
+    except IntegrityError as e:
+        db.rollback()
+        msg = str(e.orig)
+        if "UNIQUE constraint failed" in msg and "User.username" in msg:
+            detail = "username already exist."
+        else:
+            detail = "Error in database"
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
 
 @router.post("/login", response_model=models.LoginResponse)
 async def login(
@@ -45,12 +52,10 @@ def get_my_info(
     current_user: service.CurrentUser,
     db: SessionDep
 ):
-    # Información del usuario autenticado
     role = db.get(Role, current_user.role_id)
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
 
-    # Obtiene permisos del rol
     rps = db.query(RolePermission).filter(RolePermission.role_id == role.id).all()
     perm_ids = [rp.permission_id for rp in rps]
     perms = db.query(Permission).filter(Permission.id.in_(perm_ids)).all()
@@ -72,7 +77,4 @@ def inspect_token_endpoint(
     db: SessionDep,
     token: str = Body(..., embed=True, description="JWT token to be inspected")
 ):
-    """
-    Recibe un token JWT en el body y devuelve user_id, username, role_id y permisos.
-    """
     return service.inspect_token_data_raw(token, db)

@@ -20,7 +20,6 @@ from ..role_permissions.models import RolePermission
 from ..permissions.models import Permission
 from . import models
 
-# Carga .env
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -29,9 +28,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "NoSecretKeySet")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 12
 
-# Contexto de cifrado de contraseñas
 bcrypt_context = passlib.context.CryptContext(schemes=["bcrypt"], deprecated="auto")
-# Dependencia OAuth2 para Swagger y rutas protegidas
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/login", scheme_name="JWT")
 
 # --- Funciones de autenticación básica ---
@@ -139,7 +136,6 @@ def logout(
     observations: str,
     session: SessionDep
 ):
-    # Implementar lógica de logout si es necesario
     pass
 
 # --- Inspección manual de un JWT cualquiera ---
@@ -153,7 +149,6 @@ def inspect_token_data_raw(token: str, session: SessionDep):
         if not user_id or not role_id:
             raise HTTPException(status_code=400, detail="Token payload missing fields")
 
-        # Obtener permisos asociados al role_id
         stmt = select(Permission.name)\
             .join(RolePermission, Permission.id == RolePermission.permission_id)\
             .where(RolePermission.role_id == role_id)
