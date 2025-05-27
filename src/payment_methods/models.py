@@ -10,6 +10,7 @@ class PaymentMethodBase(SQLModel):
     name: str 
     icon: str
     active: bool 
+    description: str
     
 
 class PaymentMethod(PaymentMethodBase, table=True):
@@ -28,15 +29,18 @@ class PaymentMethodPublic(PaymentMethodBase):
     name: str
     icon:str
     active: bool 
+    description: str
     
 
 class PaymentMethodCreate(PaymentMethodBase):
     name: str
     icon: str
     active: bool
+    description: str
 
 class PaymentMethodUpdate(PaymentMethodBase):
     name: str | None = None # type: ignore[assignment]
     icon:str | None = None
     active: bool | None = None # type: ignore[assignment]
     updated_by: int | None = None
+    description: str | None = None
