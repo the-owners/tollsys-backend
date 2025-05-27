@@ -11,6 +11,7 @@ class PaymentMethodBase(SQLModel):
     name: str 
     icon: str
     active: bool 
+    description: str
     
 
 class PaymentMethod(PaymentMethodBase, table=True):
@@ -29,12 +30,14 @@ class PaymentMethodPublic(PaymentMethodBase):
     name: str
     icon:str
     active: bool 
+    description: str
     
 
 class PaymentMethodCreate(PaymentMethodBase):
     name: str
     icon: str
     active: bool
+    description: str
 
 class PaymentMethodUpdate(PaymentMethodBase):
     name: str | None = None # type: ignore[assignment]
@@ -52,3 +55,4 @@ class Metadata(BaseModel):
 class PaymentMethodResponse(BaseModel):
     metadata: Metadata
     data: List[PaymentMethodPublic]
+    description: str | None = None
