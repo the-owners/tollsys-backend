@@ -2,7 +2,7 @@ from typing import Sequence
 import datetime
 import decimal
 from pydantic import BaseModel
-from sqlmodel import Column, DateTime, Field, SQLModel
+from sqlmodel import Column, DateTime, Field, SQLModel, Relationship
 from enum import Enum
 import sqlalchemy as sa
 from sqlalchemy.sql import func
@@ -32,6 +32,7 @@ class Booth(BoothBase, table=True):
     active: bool | None
     status: BoothStatus | None = Field(sa_type=sa.Enum(BoothStatus))  # type: ignore
     toll_id: int | None = Field(foreign_key="Toll.id")
+    toll_payments: list["TollPayment"] = Relationship(back_populates="booth")
     created_at: datetime.datetime | None = Field(
         default_factory=lambda: datetime.datetime.now()
     )

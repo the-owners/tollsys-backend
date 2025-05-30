@@ -8,6 +8,7 @@ from src.permissions.controller import router as permissions_router
 from src.role_permissions.controller import router as role_permissions_router
 from src.roles.controller import router as roles_router
 from src.booths.controller import router as booths_router
+from src.toll_payments.controller import router as toll_payments_router
 
 
 def register_routes(app: FastAPI):
@@ -20,3 +21,4 @@ def register_routes(app: FastAPI):
     app.include_router(role_permissions_router)
     app.include_router(roles_router)
     app.include_router(booths_router)
+    app.include_router(toll_payments_router)
