@@ -16,4 +16,4 @@ static/
 .env
 
 # sqlite databases
-.db
+*.db

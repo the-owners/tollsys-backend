@@ -1,7 +1,7 @@
 from typing import Annotated, List
 from datetime import datetime
 from fastapi import Depends, HTTPException, Query
-from sqlmodel import Column, Field, Session, SQLModel, create_engine, select, column
+from sqlmodel import Column, Field, Session, SQLModel, create_engine, select, column, Relationship
 import sqlalchemy as sa
 from sqlalchemy.sql import func
 from sqlalchemy import DateTime
@@ -21,6 +21,7 @@ class VehicleType(VehicleTypeBase, table=True):
     icon: str
     rate: float
     active:bool
+    toll_payments: list["TollPayment"] = Relationship(back_populates="car_type")
     created_at: datetime | None = Field(default_factory=lambda: datetime.now())
     created_by: int | None = Field(default=None, foreign_key='User.id')
     updated_at: datetime | None = Field(default=None, sa_column=Column(DateTime(), onupdate=func.now()))
