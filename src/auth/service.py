@@ -27,7 +27,7 @@ load_dotenv()
 # Configuración de JWT
 SECRET_KEY = os.getenv("SECRET_KEY", "NoSecretKeySet")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_HOURS: float = os.getenv("ACCESS_TOKEN_EXPIRE_HOURS", 12)
+ACCESS_TOKEN_EXPIRE_HOURS: float = float(os.getenv("ACCESS_TOKEN_EXPIRE_HOURS", 12))
 
 # Contexto de cifrado de contraseñas
 bcrypt_context = passlib.context.CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -71,7 +71,7 @@ def create_access_token(
 
 # --- Registro y login ---
 
-def register_user(session: SessionDep, req: UserCreate) -> None:
+def register_user(session: SessionDep, req: UserCreate) -> User:
     hashed = get_password_hash(req.password)
     user = User(
         username=req.username,
@@ -82,6 +82,7 @@ def register_user(session: SessionDep, req: UserCreate) -> None:
     )
     session.add(user)
     session.commit()
+    return user
 
 def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
