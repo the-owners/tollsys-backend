@@ -27,7 +27,7 @@ load_dotenv()
 # Configuración de JWT
 SECRET_KEY = os.getenv("SECRET_KEY", "NoSecretKeySet")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_HOURS = 12
+ACCESS_TOKEN_EXPIRE_HOURS: float = os.getenv("ACCESS_TOKEN_EXPIRE_HOURS", 12)
 
 # Contexto de cifrado de contraseñas
 bcrypt_context = passlib.context.CryptContext(schemes=["bcrypt"], deprecated="auto")
