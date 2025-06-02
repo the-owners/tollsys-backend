@@ -14,14 +14,6 @@ router = APIRouter(
     tags=["auth"]
 )
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
-async def register_user(
-    request: Request,
-    db: SessionDep,
-    register_user_request: UserCreate
-):
-    service.register_user(db, register_user_request)
-    return {"message": "User registered successfully"}
 
 @router.post("/login", response_model=models.LoginResponse)
 async def login(

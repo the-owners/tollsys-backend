@@ -8,6 +8,7 @@ from . import  models
 from . import service
 from .models import *
 from ..auth.service import CurrentUser
+from src import auth
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from src.exceptions import UserNotFoundError
 
@@ -27,12 +28,9 @@ def read_users_me(current_user: CurrentUser):
     return current_user
 
 @router.post("/", response_model=UserPublic, status_code=status.HTTP_201_CREATED, responses={status.HTTP_201_CREATED: {"description": "User created sucessfully.", "model": UserPublic}})
-def create_user(current_user: CurrentUser, user: UserCreate, session: SessionDep):
-    db_user = User.model_validate(user)
-    session.add(db_user)
-    session.commit()
-    session.refresh(db_user)
-    return db_user
+def create_user(user: UserCreate, session: SessionDep):
+    created_user = auth.service.register_user(session, user)
+    return created_user
 
 @router.get("/", response_model=list[UserPublic])
 def read_users(
