@@ -1,28 +1,41 @@
 from typing import Annotated
-from datetime import datetime
-from fastapi import Body, Depends, HTTPException, Query, APIRouter, status
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
-from sqlmodel import Field, Session, SQLModel, create_engine, select
-from ..database.core import SessionDep
-from . import  models
-from . import service
-from .models import *
-from ..auth.service import CurrentUser
 
-router = APIRouter(
-    prefix="/payment_methods",
-    tags=["Payment Methods"]
+from fastapi import APIRouter, HTTPException, Query, status
+from sqlmodel import select
+
+from src.auth.service import CurrentUser
+from src.core.models import MetadataMixin
+from src.database.core import SessionDep
+from src.payment_methods.models import (
+    PaymentMethod,
+    PaymentMethodCreate,
+    PaymentMethodPublic,
+    PaymentMethodResponse,
+    PaymentMethodUpdate,
 )
 
-@router.post("/", response_model=PaymentMethodPublic, status_code=status.HTTP_201_CREATED, responses={status.HTTP_201_CREATED: {"description": "Payment method created sucessfully.", "model": PaymentMethodPublic}})
-def create_payment_method(payment_method: PaymentMethodCreate, current_user: CurrentUser, session: SessionDep):
+router = APIRouter(prefix="/payment_methods", tags=["Payment Methods"])
+
+
+@router.post(
+    "/",
+    response_model=PaymentMethodPublic,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_201_CREATED: {
+            "description": "Payment method created sucessfully.",
+            "model": PaymentMethodPublic,
+        }
+    },
+)
+def create_payment_method(
+    payment_method: PaymentMethodCreate, current_user: CurrentUser, session: SessionDep
+):
     db_payment_method = PaymentMethod.model_validate(payment_method)
     session.add(db_payment_method)
     session.commit()
     session.refresh(db_payment_method)
     return db_payment_method
-    # return JSONResponse(status_code=status.HTTP_201_CREATED, content=jsonable_encoder(db_payment_method))
 
 
 @router.get("/", response_model=PaymentMethodResponse)
@@ -45,28 +58,31 @@ def read_payment_methods(
     total = len(results)
     total_pages = (total + per_page - 1) // per_page
 
-    metadata = Metadata(
+    metadata = MetadataMixin(
         page=page,
         total=total,
         per_page=per_page,
         total_pages=total_pages,
-        search=search
+        search=search,
     )
 
     return PaymentMethodResponse(metadata=metadata, data=results)
 
-@router.get("/active", response_model=List[PaymentMethodPublic])
+
+@router.get("/active", response_model=list[PaymentMethodPublic])
 def read_active_payment_methods(
     session: SessionDep,
     current_user: CurrentUser,
 ):
-    query = select(PaymentMethod).where(PaymentMethod.active == True)
+    query = select(PaymentMethod).where(PaymentMethod.active)
     results = session.exec(query).all()
     return results
 
 
 @router.get("/{payment_method_id}", response_model=PaymentMethodPublic)
-def read_payment_method(payment_method_id: int, session: SessionDep, current_user: CurrentUser):
+def read_payment_method(
+    payment_method_id: int, session: SessionDep, current_user: CurrentUser
+):
     payment_method = session.get(PaymentMethod, payment_method_id)
     if not payment_method:
         raise HTTPException(status_code=404, detail="Payment Method not found")
@@ -74,7 +90,12 @@ def read_payment_method(payment_method_id: int, session: SessionDep, current_use
 
 
 @router.patch("/{payment_method_id}", response_model=PaymentMethodPublic)
-def update_payment_method(payment_method_id: int, payment_method: PaymentMethodUpdate, session: SessionDep, current_user: CurrentUser):
+def update_payment_method(
+    payment_method_id: int,
+    payment_method: PaymentMethodUpdate,
+    session: SessionDep,
+    current_user: CurrentUser,
+):
     db_payment_method = session.get(PaymentMethod, payment_method_id)
     if not db_payment_method:
         raise HTTPException(status_code=404, detail="Payment Method not found")
@@ -87,7 +108,9 @@ def update_payment_method(payment_method_id: int, payment_method: PaymentMethodU
 
 
 @router.delete("/{payment_method_id}")
-def delete_payment_method(payment_method_id: int, session: SessionDep, current_user: CurrentUser):
+def delete_payment_method(
+    payment_method_id: int, session: SessionDep, current_user: CurrentUser
+):
     payment_method = session.get(PaymentMethod, payment_method_id)
     if not payment_method:
         raise HTTPException(status_code=404, detail="Payment Method not found")

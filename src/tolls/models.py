@@ -1,52 +1,39 @@
-from typing import Annotated
-from datetime import datetime
-from fastapi import Depends, HTTPException, Query
-from sqlmodel import Column, Field, Session, SQLModel, create_engine, select, column, Index, Relationship
-import sqlalchemy as sa
-from sqlalchemy.sql import func
-from sqlalchemy import DateTime
+from typing import TYPE_CHECKING
+
+from sqlmodel import (
+    Field,
+    Relationship,
+    SQLModel,
+)
+
+from src.core.models import TimestampMixin
+
+if TYPE_CHECKING:
+    from src.toll_payments.models import TollPayment
+
 
 class TollBase(SQLModel):
-    tax_id: str 
+    tax_id: str
     legal_name: str
     address: str
-    
 
-class Toll(TollBase, table=True):
-    __tablename__ = 'Toll'
+
+class Toll(TimestampMixin, TollBase, table=True):
+    __tablename__: str = "Toll"
     id: int | None = Field(default=None, primary_key=True)
-    tax_id: str 
-    legal_name: str
-    address: str
+    tax_id: str = Field(index=True)
     toll_payments: list["TollPayment"] = Relationship(back_populates="toll")
-    created_at: datetime | None = Field(default_factory=lambda: datetime.now())
-    created_by: int | None = Field(default=None, foreign_key='User.id')
-    updated_at: datetime | None = Field(default=None, sa_column=Column(DateTime(), onupdate=func.now()))
-    updated_by: int | None = Field(default=None, foreign_key='User.id')
-
-    __table_args__ = (
-                
-    Index('idx_toll_tax_id', 'tax_id'),
-    Index('idx_toll_created_by', 'created_by'),
-    Index('idx_toll_updated_by', 'updated_by'),
-            )
 
 
 class TollPublic(TollBase):
     id: int
-    tax_id: str 
-    legal_name: str
-    address: str
 
 
 class TollCreate(TollBase):
-    tax_id: str 
-    legal_name: str
-    address: str
+    pass
 
 
 class TollUpdate(TollBase):
-    tax_id: str | None = None # type: ignore[assignment]
-    legal_name:str | None = None
+    tax_id: str | None = None
+    legal_name: str | None = None
     address: str | None = None
-    updated_by: int | None = None

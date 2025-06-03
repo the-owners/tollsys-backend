@@ -1,9 +1,18 @@
 from typing import Annotated
-from fastapi import HTTPException, Query, APIRouter, status
+
+from fastapi import APIRouter, HTTPException, Query, status
 from sqlmodel import select
-from src.database.core import SessionDep
-from src.booths.models import *
+
 from src.auth.service import CurrentUser
+from src.booths.models import (
+    Booth,
+    BoothCreate,
+    BoothPublic,
+    BoothResponse,
+    BoothUpdate,
+)
+from src.core.models import MetadataMixin
+from src.database.core import SessionDep
 
 router = APIRouter(prefix="/booths", tags=["Booths"])
 
@@ -47,7 +56,7 @@ def read_booths(
     total = len(results)
     total_pages = (total + per_page - 1) // per_page
 
-    metadata = Metadata(
+    metadata = MetadataMixin(
         page=page,
         total=total,
         per_page=per_page,
@@ -63,7 +72,7 @@ def read_active_booths(
     session: SessionDep,
     current_user: CurrentUser,
 ):
-    query = select(Booth).where(Booth.active == True)
+    query = select(Booth).where(Booth.active)
     results = session.exec(query).all()
     return results
 

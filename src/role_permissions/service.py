@@ -1,30 +1,29 @@
+from fastapi import HTTPException
 from sqlmodel import Session, select
-from ..database.core import SessionDep
-from .models import RolePermission
-from ..auth.service import CurrentUser
-from fastapi import HTTPException, status
+
+from src.auth.service import CurrentUser
+from src.role_permissions.models import RolePermission
 
 
 def create_role_permission(
-    role_id: int,
-    permission_id: int,
-    current_user: CurrentUser,
-    session: Session
+    role_id: int, permission_id: int, current_user: CurrentUser, session: Session
 ):
     existing = session.exec(
         select(RolePermission).where(
             RolePermission.role_id == role_id,
-            RolePermission.permission_id == permission_id
+            RolePermission.permission_id == permission_id,
         )
     ).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Permission already assigned to role")
+        raise HTTPException(
+            status_code=400, detail="Permission already assigned to role"
+        )
 
     rp = RolePermission(
         role_id=role_id,
         permission_id=permission_id,
         created_by=current_user.id,
-        updated_by=current_user.id
+        updated_by=current_user.id,
     )
     session.add(rp)
     session.commit()
@@ -42,7 +41,7 @@ def delete_role_permission(role_id: int, permission_id: int, session: Session):
     rp = session.exec(
         select(RolePermission).where(
             RolePermission.role_id == role_id,
-            RolePermission.permission_id == permission_id
+            RolePermission.permission_id == permission_id,
         )
     ).first()
     if not rp:

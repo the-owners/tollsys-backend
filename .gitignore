@@ -17,3 +17,6 @@ static/
 
 # sqlite databases
 *.db
+
+# sql files
+*.sql

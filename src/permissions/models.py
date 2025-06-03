@@ -1,7 +1,8 @@
-import datetime
-from typing import Optional
-from sqlmodel import Field, SQLModel, Index
 from enum import Enum
+
+from sqlmodel import Field, SQLModel
+
+from src.core.models import TimestampMixin
 
 
 class PermissionEnum(str, Enum):
@@ -15,17 +16,13 @@ class PermissionEnum(str, Enum):
 
 
 class PermissionBase(SQLModel):
-    name: Optional[str] = None
+    name: str | None = Field(default=None, index=True)
 
 
-class Permission(PermissionBase, table=True):
-    __tablename__ = "Permission"
+class Permission(TimestampMixin, PermissionBase, table=True):
+    __tablename__: str = "Permission"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.utcnow)
-    updated_at: Optional[datetime.datetime] = Field(default_factory=datetime.datetime.utcnow)
-
-    __table_args__ = (Index('idx_permission_name', 'name'),)
+    id: int | None = Field(default=None, primary_key=True)
 
 
 class PermissionCreate(PermissionBase):

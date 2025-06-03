@@ -1,38 +1,52 @@
 from typing import Annotated
-from datetime import datetime
-from fastapi import Body, Depends, HTTPException, Query, APIRouter, status
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
-from sqlmodel import Field, Session, SQLModel, create_engine, select
-from ..database.core import SessionDep
-from . import  models
-from . import service
-from .models import *
-from ..auth.service import CurrentUser
 
+from fastapi import APIRouter, HTTPException, Query, status
+from sqlmodel import select
 
-router = APIRouter(
-    prefix="/vehicle_types",
-    tags=["Vehicle Types"]
+from src.auth.service import CurrentUser
+from src.core.models import MetadataMixin
+from src.database.core import SessionDep
+from src.vehicle_types.models import (
+    VehicleType,
+    VehicleTypeCreate,
+    VehicleTypePublic,
+    VehicleTypeResponse,
+    VehicleTypeUpdate,
 )
 
-@router.post("/", response_model=VehicleTypePublic, status_code=status.HTTP_201_CREATED, responses={status.HTTP_201_CREATED: {"description": "Vehicle type created sucessfully.", "model": VehicleTypePublic}})
-def create_vehicle_type(current_user: CurrentUser, vehicle_type: VehicleTypeCreate, session: SessionDep):
+router = APIRouter(prefix="/vehicle_types", tags=["Vehicle Types"])
+
+
+@router.post(
+    "/",
+    response_model=VehicleTypePublic,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_201_CREATED: {
+            "description": "Vehicle type created sucessfully.",
+            "model": VehicleTypePublic,
+        }
+    },
+)
+def create_vehicle_type(
+    current_user: CurrentUser, vehicle_type: VehicleTypeCreate, session: SessionDep
+):
     db_vehicle_type = VehicleType.model_validate(vehicle_type)
     session.add(db_vehicle_type)
     session.commit()
     session.refresh(db_vehicle_type)
     return db_vehicle_type
-    # return JSONResponse(status_code=status.HTTP_201_CREATED, content=jsonable_encoder(db_vehicle_type))
 
-@router.get("/active", response_model=List[VehicleTypePublic])
+
+@router.get("/active", response_model=list[VehicleTypePublic])
 def read_active_vehicle_types(
-        session:SessionDep,
-        current_user: CurrentUser,
+    session: SessionDep,
+    current_user: CurrentUser,
 ):
-    query = select(VehicleType).where(VehicleType.active == True)
+    query = select(VehicleType).where(VehicleType.active)
     results = session.exec(query).all()
     return results
+
 
 @router.get("/", response_model=VehicleTypeResponse)
 def read_vehicle_types(
@@ -51,30 +65,34 @@ def read_vehicle_types(
     total = len(results)
     total_pages = (total + per_page - 1) // per_page
 
-    metadata = Metadata(
+    metadata = MetadataMixin(
         page=page,
         total=total,
         per_page=per_page,
         total_pages=total_pages,
-        search=search
+        search=search,
     )
-    
 
-    return VehicleTypeResponse(metadata=metadata, data= results)
-
-
+    return VehicleTypeResponse(metadata=metadata, data=results)
 
 
 @router.get("/{vehicle_type_id}", response_model=VehicleTypePublic)
-def read_vehicle_type(current_user: CurrentUser, vehicle_type_id: int, session: SessionDep):
-    vehicle_type = session.get(VehicleType, vehicle_type)
+def read_vehicle_type(
+    current_user: CurrentUser, vehicle_type_id: int, session: SessionDep
+):
+    vehicle_type = session.get(VehicleType, vehicle_type_id)
     if not vehicle_type:
         raise HTTPException(status_code=404, detail="Vehicle Type not found")
     return vehicle_type
 
 
 @router.patch("/{vehicle_type_id}", response_model=VehicleTypePublic)
-def update_vehicle_type(current_user: CurrentUser, vehicle_type_id: int, vehicle_type: VehicleTypeUpdate, session: SessionDep):
+def update_vehicle_type(
+    current_user: CurrentUser,
+    vehicle_type_id: int,
+    vehicle_type: VehicleTypeUpdate,
+    session: SessionDep,
+):
     db_vehicle_type = session.get(VehicleType, vehicle_type_id)
     if not db_vehicle_type:
         raise HTTPException(status_code=404, detail="Vehicle type not found")
@@ -87,7 +105,9 @@ def update_vehicle_type(current_user: CurrentUser, vehicle_type_id: int, vehicle
 
 
 @router.delete("/{vehicle_type_id}")
-def delete_vehicle_type(current_user: CurrentUser, vehicle_type_id: int, session: SessionDep):
+def delete_vehicle_type(
+    current_user: CurrentUser, vehicle_type_id: int, session: SessionDep
+):
     vehicle_type = session.get(VehicleType, vehicle_type_id)
     if not vehicle_type:
         raise HTTPException(status_code=404, detail="Vehicle type not found")

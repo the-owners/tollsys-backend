@@ -1,15 +1,18 @@
-from typing import Optional
 from sqlmodel import SQLModel
-from ..users.models import UserPublic
+
+from src.users.models import UserPublic
+
 
 class Token(SQLModel):
     access_token: str
     token_type: str
 
+
 class TokenData(SQLModel):
-    user_id: Optional[int] = None
-    role_id: Optional[int] = None
-    username: Optional[str] = None
+    user_id: int | None = None
+    role_id: int | None = None
+    username: str | None = None
+
 
 class LoginResponse(SQLModel):
     access_token: str

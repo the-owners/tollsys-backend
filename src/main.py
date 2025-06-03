@@ -1,7 +1,9 @@
 from fastapi import FastAPI
-from .database.core import create_db_and_tables, initialize_first_data, SessionDep
-from .api import register_routes
 from fastapi.middleware.cors import CORSMiddleware
+
+from src.api import register_routes
+from src.database.core import create_db_and_tables
+from src.database.initialize_data import initialize_first_data
 
 app = FastAPI()
 
@@ -13,9 +15,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
-    initialize_first_data() # and tbh, we should use a migration script or sum
+    initialize_first_data()
+
 
 register_routes(app)

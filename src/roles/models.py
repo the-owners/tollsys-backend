@@ -1,33 +1,19 @@
-import datetime
-import decimal
-from typing import Optional
 from sqlmodel import Field, SQLModel
-from enum import Enum
-import sqlalchemy as sa
-from sqlalchemy.sql import func
-from sqlalchemy import Index
 
-class Role(SQLModel, table=True):
+from src.core.models import TimestampMixin
 
-    __tablename__ = 'Role'
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-    name: Optional[str]
-    created_at: Optional[datetime.datetime] = Field(default=None)
-    created_by: Optional[int] = Field(default=None, foreign_key='User.id')
-    updated_at: Optional[datetime.datetime] = Field(default=None)
-    updated_by: Optional[int] = Field(default=None, foreign_key='User.id')
+class Role(TimestampMixin, SQLModel, table=True):
+    __tablename__: str = "Role"
 
-    __table_args__ = (
-                
-    Index('idx_role_name', 'name'),
-    Index('idx_role_created_by', 'created_by'),
-    Index('idx_role_updated_by', 'updated_by'),
-    )
+    id: int | None = Field(default=None, primary_key=True)
+    name: str | None = Field(index=True)
+
 
 class RolePublic(SQLModel):
     id: int | None = None
     name: str | None = None
+
 
 class RoleCreate(SQLModel):
     name: str

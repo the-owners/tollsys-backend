@@ -1,12 +1,19 @@
-from typing import Optional
-from fastapi import HTTPException, APIRouter, status
+from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select
-from src.database.core import SessionDep
-from src.booths.models import Booth, BoothPublic
-from src.tolls.models import Toll, TollPublic
-from src.toll_payments.models import *
-from src.payment_methods.models import PaymentMethod
+
 from src.auth.service import CurrentUser
+from src.booths.models import Booth, BoothPublic
+from src.database.core import SessionDep
+from src.payment_methods.models import PaymentMethod, PaymentMethodPublic
+from src.toll_payments.models import (
+    PaymentMethodTP,
+    PaymentMethodTPWrapper,
+    TollPayment,
+    TollPaymentCreate,
+    TollPaymentPublic,
+)
+from src.tolls.models import Toll, TollPublic
+from src.vehicle_types.models import VehicleTypePublic
 
 router = APIRouter(prefix="/toll_payments", tags=["Toll Payments"])
 
@@ -31,7 +38,7 @@ def create_toll_payment(
         .where(Booth.toll_id == current_user.toll_id)
         .limit(1)
     )
-    current_booth_id: Optional[int] = session.exec(statement).first()
+    current_booth_id: int | None = session.exec(statement).first()
 
     if not current_booth_id:
         raise HTTPException(
@@ -57,7 +64,7 @@ def create_toll_payment(
             .where(PaymentMethod.id == pmtp_create.payment_method_id)
             .limit(1)
         )
-        found_pm: Optional[PaymentMethod] = session.exec(statement_pm).first()
+        found_pm: PaymentMethod | None = session.exec(statement_pm).first()
 
         if not found_pm:
             raise HTTPException(
@@ -87,7 +94,7 @@ def create_toll_payment(
             .where(PaymentMethod.id == pmtp_create.payment_method_id)
             .limit(1)
         )
-        found_pm: Optional[PaymentMethod] = session.exec(statement_pm).first()
+        found_pm: PaymentMethod | None = session.exec(statement_pm).first()
 
         wrapped_amounts.append(
             PaymentMethodTPWrapper(

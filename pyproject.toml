@@ -16,5 +16,18 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "isort>=6.0.1",
+    "pre-commit>=4.2.0",
+    "ruff>=0.11.12",
     "types-passlib>=1.7.7.20250408",
 ]
+
+[tool.isort]
+profile = "black"
+
+[tool.pyright]
+# These are the crucial overrides for ORM false positives
+reportAttributeAccessIssue = "none"
+reportOptionalMemberAccess = "none"
+reportAssignmentType = "none"
+#reportGeneralTypeIssues = "none"

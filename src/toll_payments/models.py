@@ -1,13 +1,20 @@
 import decimal
-from datetime import datetime
 import uuid
-from sqlmodel import Column, Field, SQLModel, Relationship
-from sqlalchemy.sql import func
-from sqlalchemy import DateTime
+from datetime import datetime
+from typing import TYPE_CHECKING
+
+from sqlmodel import Field, Relationship, SQLModel
+
 from src.booths.models import BoothPublic
+from src.core.models import TimestampMixin
+from src.payment_methods.models import PaymentMethodPublic
 from src.tolls.models import TollPublic
 from src.vehicle_types.models import VehicleTypePublic
-from src.payment_methods.models import PaymentMethodPublic
+
+if TYPE_CHECKING:
+    from src.booths.models import Booth
+    from src.tolls.models import Toll
+    from src.vehicle_types.models import VehicleType
 
 
 class TollPaymentBase(SQLModel):
@@ -23,15 +30,11 @@ class TollPaymentBase(SQLModel):
 # ~Derwins
 
 
-class PaymentMethodTP(SQLModel, table=True):  # New table for payment methods
+class PaymentMethodTP(SQLModel, table=True):
     __tablename__: str = "PaymentMethodTP"
     id: int | None = Field(default=None, primary_key=True)
-    toll_payment_id: int = Field(
-        foreign_key="TollPayment.id"
-    )  # Foreign key to TollPayment
-    payment_method_id: int = Field(
-        foreign_key="PaymentMethod.id"
-    )  # Foreign key to PaymentMethod
+    toll_payment_id: int = Field(foreign_key="TollPayment.id")
+    payment_method_id: int = Field(foreign_key="PaymentMethod.id")
     amount: decimal.Decimal = Field(default=0)
 
     toll_payment: "TollPayment" = Relationship(back_populates="amounts")
@@ -52,24 +55,16 @@ class PaymentMethodTPWrapper(SQLModel):
     amount: decimal.Decimal
 
 
-class TollPayment(TollPaymentBase, table=True):
+class TollPayment(TimestampMixin, TollPaymentBase, table=True):
     __tablename__: str = "TollPayment"
     id: int | None = Field(default=None, primary_key=True)
     receipt_nro: str | None = Field(
         unique=True, default_factory=lambda: str(uuid.uuid4())
     )
-    booth: "Booth" = Relationship(back_populates="toll_payments") # type: ignore
-    toll: "Toll" = Relationship(back_populates="toll_payments") # type: ignore
-    car_type: "VehicleType" = Relationship(back_populates="toll_payments") # type: ignore
-    amounts: list[PaymentMethodTP] = Relationship(
-        back_populates="toll_payment"
-    ) 
-    created_at: datetime | None = Field(default_factory=lambda: datetime.now())
-    created_by: int | None = Field(default=None, foreign_key="User.id")
-    updated_at: datetime | None = Field(
-        default=None, sa_column=Column(DateTime(), onupdate=func.now())
-    )
-    updated_by: int | None = Field(default=None, foreign_key="User.id")
+    booth: "Booth" = Relationship(back_populates="toll_payments")  # type: ignore
+    toll: "Toll" = Relationship(back_populates="toll_payments")  # type: ignore
+    car_type: "VehicleType" = Relationship(back_populates="toll_payments")  # type: ignore
+    amounts: list[PaymentMethodTP] = Relationship(back_populates="toll_payment")
 
 
 class TollPaymentCreate(SQLModel):
