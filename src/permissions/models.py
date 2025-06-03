@@ -1,8 +1,12 @@
 from enum import Enum
+from typing import TYPE_CHECKING
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 from src.core.models import TimestampMixin
+
+if TYPE_CHECKING:
+    from src.role_permissions.models import RolePermission
 
 
 class PermissionEnum(str, Enum):
@@ -23,6 +27,7 @@ class Permission(TimestampMixin, PermissionBase, table=True):
     __tablename__: str = "Permission"
 
     id: int | None = Field(default=None, primary_key=True)
+    role_permissions: list["RolePermission"] = Relationship(back_populates="permission")
 
 
 class PermissionCreate(PermissionBase):

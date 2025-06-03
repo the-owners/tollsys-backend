@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import select
 
 from src.auth.service import CurrentUser
@@ -13,6 +13,7 @@ from src.payment_methods.models import (
     PaymentMethodResponse,
     PaymentMethodUpdate,
 )
+from src.permissions.service import has_permission
 
 router = APIRouter(prefix="/payment_methods", tags=["Payment Methods"])
 
@@ -27,10 +28,11 @@ router = APIRouter(prefix="/payment_methods", tags=["Payment Methods"])
             "model": PaymentMethodPublic,
         }
     },
+    dependencies=[
+        Depends(has_permission("create_payment_methods")),
+    ],
 )
-def create_payment_method(
-    payment_method: PaymentMethodCreate, current_user: CurrentUser, session: SessionDep
-):
+def create_payment_method(payment_method: PaymentMethodCreate, session: SessionDep):
     db_payment_method = PaymentMethod.model_validate(payment_method)
     session.add(db_payment_method)
     session.commit()
@@ -38,7 +40,13 @@ def create_payment_method(
     return db_payment_method
 
 
-@router.get("/", response_model=PaymentMethodResponse)
+@router.get(
+    "/",
+    response_model=PaymentMethodResponse,
+    dependencies=[
+        Depends(has_permission("read_payment_methods")),
+    ],
+)
 def read_payment_methods(
     session: SessionDep,
     current_user: CurrentUser,
@@ -69,7 +77,13 @@ def read_payment_methods(
     return PaymentMethodResponse(metadata=metadata, data=results)
 
 
-@router.get("/active", response_model=list[PaymentMethodPublic])
+@router.get(
+    "/active",
+    response_model=list[PaymentMethodPublic],
+    dependencies=[
+        Depends(has_permission("read_payment_methods")),
+    ],
+)
 def read_active_payment_methods(
     session: SessionDep,
     current_user: CurrentUser,
@@ -79,7 +93,13 @@ def read_active_payment_methods(
     return results
 
 
-@router.get("/{payment_method_id}", response_model=PaymentMethodPublic)
+@router.get(
+    "/{payment_method_id}",
+    response_model=PaymentMethodPublic,
+    dependencies=[
+        Depends(has_permission("read_payment_methods")),
+    ],
+)
 def read_payment_method(
     payment_method_id: int, session: SessionDep, current_user: CurrentUser
 ):
@@ -89,7 +109,13 @@ def read_payment_method(
     return payment_method
 
 
-@router.patch("/{payment_method_id}", response_model=PaymentMethodPublic)
+@router.patch(
+    "/{payment_method_id}",
+    response_model=PaymentMethodPublic,
+    dependencies=[
+        Depends(has_permission("update_payment_methods")),
+    ],
+)
 def update_payment_method(
     payment_method_id: int,
     payment_method: PaymentMethodUpdate,
@@ -107,7 +133,12 @@ def update_payment_method(
     return db_payment_method
 
 
-@router.delete("/{payment_method_id}")
+@router.delete(
+    "/{payment_method_id}",
+    dependencies=[
+        Depends(has_permission("delete_payment_methods")),
+    ],
+)
 def delete_payment_method(
     payment_method_id: int, session: SessionDep, current_user: CurrentUser
 ):

@@ -1,6 +1,8 @@
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 from src.core.models import TimestampMixin
+from src.permissions.models import Permission
+from src.roles.models import Role
 
 
 class RolePermissionBase(SQLModel):
@@ -12,6 +14,14 @@ class RolePermissionBase(SQLModel):
 
 class RolePermission(TimestampMixin, RolePermissionBase, table=True):
     __tablename__: str = "RolePermission"
+
+    # Define the Relationship to the Role model
+    # This creates the 'role' property on RolePermission instances
+    role: Role = Relationship(back_populates="role_permissions")
+
+    # Define the Relationship to the Permission model
+    # This creates the 'permission' property on RolePermission instances
+    permission: Permission = Relationship(back_populates="role_permissions")
 
     id: int | None = Field(default=None, primary_key=True)
 

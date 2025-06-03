@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.auth.service import CurrentUser
 from src.database.core import SessionDep
@@ -8,7 +8,14 @@ from src.permissions.models import PermissionCreate, PermissionPublic, Permissio
 router = APIRouter(prefix="/permissions", tags=["Permissions"])
 
 
-@router.post("/", response_model=PermissionPublic, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=PermissionPublic,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[
+        Depends(service.has_permission("manage_users")),
+    ],
+)
 def create_permission(
     current_user: CurrentUser, permission: PermissionCreate, session: SessionDep
 ):
